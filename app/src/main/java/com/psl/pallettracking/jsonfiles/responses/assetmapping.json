@@ -1,0 +1,32 @@
+{
+  "status": true,
+  "message": "",
+  "data": {
+    "valid": [
+      {
+        "pallet_tag_id": "12312321323213",
+        "pallet_name": "ABC",
+        "asset_number": "123"
+      },
+      {
+        "pallet_tag_id": "12312321323213",
+        "pallet_name": "ABC",
+        "asset_number": "1234"
+      }
+    ],
+    "invalid": [
+      {
+        "pallet_tag_id": "12312321323215",
+        "pallet_name": "ABCD",
+        "asset_number": "12345",
+        "status": "valid"
+      },
+      {
+        "pallet_tag_id": "12312321323214",
+        "pallet_name": "null",
+        "asset_number": "12346",
+        "status": "invalid asset"
+      }
+    ]
+  }
+}

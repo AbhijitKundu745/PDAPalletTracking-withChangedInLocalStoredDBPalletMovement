@@ -1,0 +1,73 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdkVersion 33
+    namespace 'com.psl.pallettracking'
+
+    defaultConfig {
+        applicationId "com.psl.pallettracking"
+        minSdkVersion 24
+        targetSdkVersion 33
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        dataBinding true
+        viewBinding true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:'
+
+    //implementation files('libs\\uhf.jar')
+    //implementation files('build/scankey.jar')
+    //implementation files('libs\\scankey.jar')
+    implementation files('libs\\commons-net-3.7.2.jar')
+
+    implementation files('libs/scankey.jar')
+    implementation files('libs/sleduhf.jar')
+    implementation files('libs/uhf.jar')
+    implementation files('libs/ScannerAPI.jar')
+
+    //searchable spinner
+    implementation 'gr.escsoft.michaelprimez.searchablespinner:SearchableSpinner:1.0.9'
+    //networking
+    implementation 'com.amitshekhar.android:android-networking:0.2.0'
+    implementation 'commons-codec:commons-codec:1.10'
+
+    // Glide dependency
+    implementation 'com.github.bumptech.glide:glide:4.15.1'
+    implementation 'com.android.car.ui:car-ui-lib:2.6.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.15.1'
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    modules {
+        module("org.jetbrains.kotlin:kotlin-stdlib-jdk7") {
+            replacedBy("org.jetbrains.kotlin:kotlin-stdlib", "kotlin-stdlib-jdk7 is now part of kotlin-stdlib")
+        }
+        module("org.jetbrains.kotlin:kotlin-stdlib-jdk8") {
+            replacedBy("org.jetbrains.kotlin:kotlin-stdlib", "kotlin-stdlib-jdk8 is now part of kotlin-stdlib")
+        }
+    }
+}

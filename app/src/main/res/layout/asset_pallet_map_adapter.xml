@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat android:layout_width="match_parent"
+    android:layout_height="35dp"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:padding="5dp"
+    android:orientation="horizontal"
+    android:background="@color/page_background"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView
+        android:id="@+id/textAssetName"
+        android:layout_width="0dp"
+        android:layout_weight="1.3"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:layout_height="35dp"
+        android:text="Asset Name"/>
+    <ImageView
+        android:id="@+id/imgView"
+        android:layout_width="35dp"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:layout_height="35dp"
+        android:layout_marginLeft="5dp"
+        android:src="@drawable/error"/>
+
+</androidx.appcompat.widget.LinearLayoutCompat>

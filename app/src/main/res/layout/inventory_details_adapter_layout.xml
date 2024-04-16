@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat android:layout_width="match_parent"
+    android:layout_height="35dp"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:padding="5dp"
+    android:background="@color/page_background"
+    android:orientation="horizontal"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView
+        android:id="@+id/textName"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:layout_height="35dp"
+        android:ellipsize="marquee"
+        android:visibility="visible"
+        android:singleLine="true"
+        android:text="Name"/>
+    <TextView
+        android:id="@+id/textTagId"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
+        android:layout_height="35dp"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:visibility="visible"
+        android:text="Sr. No"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:layout_marginLeft="5dp"
+        android:visibility="gone"
+        android:text=":"/>
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnRemove"
+        android:layout_width="50dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_marginLeft="5dp"
+        android:background="@drawable/round_button_red"
+        android:layout_height="20dp"
+        android:text="-"/>
+
+</androidx.appcompat.widget.LinearLayoutCompat>

@@ -1,0 +1,60 @@
+{
+  "status": true,
+  "message": "",
+  "data": {
+    "CustomerID": "aaaadsaw425425",
+    "TagPassword": "12345678",
+    "UserID": "asas_dasdas",
+    "CompanyCode": "15",
+    "Dashboard": [{
+      "Menu_ID": "MAP_CARTON_PALLET_ID",
+      "Menu_Name": "Asset Mapping",
+      "Menu_Image": "hdjashsd",
+      "Menu_Is_Active": "true",
+      "Menu_Sequence": "1"
+    },
+      {
+        "Menu_ID": "MAP_CONTAINER_PALLET_ID",
+        "Menu_Name": "Pallet Mapping",
+        "Menu_Image": "hdjashsdss",
+        "Menu_Is_Active": "true",
+        "Menu_Sequence": "2"
+      },
+      {
+        "Menu_ID": "INVENTORY_ID",
+        "Menu_Name": "Inventory",
+        "Menu_Image": "hdjashsdss",
+        "Menu_Is_Active": "true",
+        "Menu_Sequence": "3"
+      },
+      {
+        "Menu_ID": "SEARCH_ID",
+        "Menu_Name": "Search",
+        "Menu_Image": "hdjashsdss",
+        "Menu_Is_Active": "true",
+        "Menu_Sequence": "4"
+      },
+      {
+        "Menu_ID": "ASSETSYNC_ID",
+        "Menu_Name": "Sync",
+        "Menu_Image": "hdjashsdss",
+        "Menu_Is_Active": "true",
+        "Menu_Sequence": "5"
+      }
+    ],
+    "AssetType": [{
+      "ATypeID": "1",
+      "AssetName": "CARTON"
+    },
+      {
+        "ATypeID": "2",
+        "AssetName": "pallet"
+      },
+      {
+        "ATypeID": "3",
+        "AssetName": "CONTAINER"
+      }
+    ]
+
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "status": true,
+  "message": "",
+  "data": {
+    "valid": [
+      {
+        "pallet_tag_id": "12312321323213",
+        "pallet_name": "ABC",
+        "container_tag_id": "12334234324",
+        "container_name": "C1"
+      },
+      {
+        "pallet_tag_id": "12312321323214",
+        "pallet_name": "ABC1",
+        "container_tag_id": "12334234324",
+        "container_name": "C1"
+      }
+    ],
+    "invalid": [
+      {
+        "pallet_tag_id": "123123213232145",
+        "pallet_name": "ABC12",
+        "container_tag_id": "12334234324555",
+        "container_name": "C2",
+        "status": "valid"
+      },
+      {
+        "pallet_tag_id": "12312321323214444",
+        "pallet_name": "ABC13",
+        "container_tag_id": "123342343244556",
+        "container_name": "C3",
+        "status": "valid"
+      },
+      {
+        "pallet_tag_id": "12312321323214444",
+        "pallet_name": "null",
+        "container_tag_id": "123342343244556",
+        "container_name": "C3",
+        "status": "invalid pallet"
+      }
+    ]
+  }
+}

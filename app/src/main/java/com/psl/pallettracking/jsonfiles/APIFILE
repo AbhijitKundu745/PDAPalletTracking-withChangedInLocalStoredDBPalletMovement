@@ -1,0 +1,268 @@
+
+//LOGIN : Method : MobileLogin, Type : POST
+{
+	"UserName": "psladmin",
+	"Password": "SJ9ghXD2pupL+gzxbb9o",
+	"ClientDeviceID": "abcd123456781234"
+}
+
+
+RESPONSE:
+
+//SUCCESS
+{
+	"status": true,
+	"message": "",
+	"data": {
+		"CustomerID": "aaaadsaw425425",
+		"TagPassword": "ssasasare5g_fwa%$",
+		"UserID": "asas_dasdas",
+		"CompanyCode": "FF",
+		"Dashboard": [{
+				"Menu_ID": "MAP_CARTON_PALLET_ID",
+				"Menu_Name": "abc",
+				"Menu_Image": "hdjashsd",
+				"Menu_Is_Active": "true",
+				"Menu_Sequence": "1"
+			},
+			{
+				"Menu_ID": "MAP_CONTAINER_PALLET_ID",
+				"Menu_Name": "abcd",
+				"Menu_Image": "hdjashsdss",
+				"Menu_Is_Active": "true",
+				"Menu_Sequence": "2"
+			},
+			{
+				"Menu_ID": "INVENTORY_ID",
+				"Menu_Name": "Inventory",
+				"Menu_Image": "hdjashsdss",
+				"Menu_Is_Active": "true",
+				"Menu_Sequence": "3"
+			},
+			{
+				"Menu_ID": "SEARCH_ID",
+				"Menu_Name": "Search",
+				"Menu_Image": "hdjashsdss",
+				"Menu_Is_Active": "true",
+				"Menu_Sequence": "4"
+			},
+{
+				"Menu_ID": "ASSETSYNC_ID",
+				"Menu_Name": "Sync",
+				"Menu_Image": "hdjashsdss",
+				"Menu_Is_Active": "true",
+				"Menu_Sequence": "5"
+			}
+		],
+		"AssetType": [{
+				"ATypeID": "1",
+				"AssetName": "CARTON"
+			},
+			{
+				"ATypeID": "2",
+				"AssetName": "PALLET"
+			},
+			{
+				"ATypeID": "3",
+				"AssetName": "CONTAINER"
+			}
+		]
+
+	}
+}
+
+
+//FAIL
+{
+	"status": false,
+	"message": "invalid username or passord",
+	"data": null
+}
+
+______________________________________________________________________________
+//Master
+Request
+{
+  "UserID": "bmnasbdgg35334324",
+  "CustomerID": "bmnasbdgg12rrf",
+  "ClientDeviceID": "bmnasbdgg12rrf"
+}
+
+RESPONSE:
+1) SUCCESS
+{
+	"status": true,
+	"message": "",
+	"data": [{
+			"tag_id": "12312321323213",
+			"name": "ABC",
+			"type": "carton"
+		},
+		{
+			"tag_id": "12312321323213",
+			"name": "ABCD",
+			"type": "pallet"
+		},
+		{
+			"tag_id": "12312321323213",
+			"name": "ABCD",
+			"type": "rack"
+		}
+
+	]
+}
+
+2) FAIL
+{
+  "status": true,
+  "message": "No master data",
+  "data": null
+}
+
+__________________________________________________________________________
+
+//asset pallet mapping
+Request:
+{
+	"UserID": "bmnasbdgg35334324",
+	"CustomerID": "bmnasbdgg12rrf",
+	"ClientDeviceID": "bmnasbdgg12rrf",
+	"PalletID": "1234456565656",
+	"Assets": [
+		"123",
+		"1234",
+		"12345",
+		"123456"
+	]
+}
+
+RESPONSE:
+1) SUCCESS
+
+{
+	"status": true,
+	"message": "",
+	"data": [{
+			"pallet_tag_id": "12312321323213",
+			"pallet_name": "ABC",
+			"asset_number": "123",
+			"status": true,
+			"message": ""
+		},
+		{
+			"pallet_tag_id": "12312321323213",
+			"pallet_name": "ABC",
+			"asset_number": "1234",
+			"status": true,
+			"message": ""
+		},
+		{
+			"pallet_tag_id": "12312321323213",
+			"pallet_name": "ABCDEFG",
+			"asset_number": "12345",
+			"status": false,
+			"message": "wrong asset"
+		},
+		{
+			"pallet_tag_id": "12312321323215",
+			"pallet_name": "ABCD",
+			"asset_number": "12345",
+			"status": false,
+			"message": "wrong pallet"
+		},
+		{
+			"pallet_tag_id": "123123213232156",
+			"pallet_name": "ABCDEF",
+			"asset_number": "123456",
+			"status": false,
+			"message": "wrong pallet and wrong asset"
+		}
+	]
+
+}
+
+2) FAIL
+
+{
+  "status": true,
+  "message": "invalid pallet id",//respective msg
+  "data": null
+}
+
+
+_____________________________________________________________________
+
+Pallet container Mapping
+Request:
+
+{
+	"UserID": "bmnasbdgg35334324",
+	"CustomerID": "bmnasbdgg12rrf",
+	"ClientDeviceID": "bmnasbdgg12rrf",
+	"ContainerID": "12334234324",
+	"Pallets": [
+		"12312321323213",
+		"123123213232131",
+		"123123213232132",
+		"123123213232134"
+	]
+}
+
+Response:
+1)SUCCESS:
+{
+	"status": true,
+	"message": "",
+	"data": [{
+			"pallet_tag_id": "12312321323213",
+			"pallet_name": "ABC",
+			"container_tag_id": "12334234324",
+			"container_name": "C1",
+			"status": true,
+			"message": ""
+		},
+		{
+			"pallet_tag_id": "123123213232131",
+			"pallet_name": "ABC1",
+			"container_tag_id": "12334234324",
+			"container_name": "C1",
+			"status": true,
+			"message": ""
+		},
+		{
+			"pallet_tag_id": "123123213232132",
+			"pallet_name": "ABC2",
+			"container_tag_id": "12334234324",
+			"container_name": "C1",
+			"status": false,
+			"message": "wrong pallet"
+		},
+		{
+			"pallet_tag_id": "123123213232133",
+			"pallet_name": "ABC3",
+			"container_tag_id": "123342343241",
+			"container_name": "C2",
+			"status": false,
+			"message": "wrong container"
+		}, {
+			"pallet_tag_id": "123123213232134",
+			"pallet_name": "ABC4",
+			"container_tag_id": "123342343242",
+			"container_name": "C3",
+			"status": false,
+			"message": "wrong pallet and wrong container"
+		}
+	]
+
+}
+
+
+2) FAIL:
+{
+  "status": true,
+  "message": "invalid container id",//respective msg
+  "data": null
+}
+
+
+

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+
+    </data>
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@drawable/gradient_color"
+        tools:context=".BinPartialPalletMappingActivity">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/banner" />
+        <TextView
+            android:id="@+id/textWorkOrderType"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:text="Dispatch Pallet Creation"
+            android:gravity="bottom|center_horizontal"
+            android:textColor="#0072CC"
+            android:textSize="25sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_margin="8dp"
+            android:layout_weight="18"
+            android:background="@drawable/linear_bg"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.1"
+                android:padding="5dp"
+                android:text="WORK ORDERS"
+                android:textColor="#0159A9"
+                android:textSize="20sp"
+                android:layout_gravity="bottom"
+                android:gravity="bottom"
+                android:textStyle="bold" />
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+               >
+                <TextView
+                    android:id="@+id/textSrNo"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.4"
+                    android:textAlignment="center"
+                    android:textSize="17sp"
+                    android:padding="5dp"
+                    android:textStyle="bold"
+                    android:text="SrNo"
+                    android:background="@color/orange1"
+                    android:textColor="@color/white"/>
+
+                <TextView
+                    android:id="@+id/textWorkOrderNo"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="Dispatch No"
+                    android:textAlignment="center"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:padding="5dp"
+                    android:background="@color/orange1"
+                    android:textColor="@color/white"/>
+                <TextView
+                    android:id="@+id/textWorkorderType"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.5"
+                    android:text="Type"
+                    android:textAlignment="center"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:padding="5dp"
+                    android:background="@color/orange1"
+                    android:textColor="@color/white"/>
+                <TextView
+                    android:id="@+id/textAction"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.7"
+                    android:text=""
+                    android:textAlignment="center"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:padding="5dp"
+                    android:background="@color/orange1"
+                    android:textColor="@color/white"/>
+
+            </LinearLayout>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_pallet"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:padding="5dp"
+                android:scrollbars="vertical"/>
+        </LinearLayout>
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="50dp">
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_back"
+                android:layout_width="100dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginStart="5dp"
+                android:text="Back"
+                android:textAlignment="center"
+                android:background="@drawable/round_button_red"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:textSize="15sp"
+                />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_gravity="bottom"
+            android:gravity="center"
+            android:paddingBottom="5dp"
+            android:text="@string/footer"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textSize="10sp"/>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</layout>

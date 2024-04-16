@@ -1,0 +1,26 @@
+{
+  "status": true,
+  "message": "",
+  "data": {
+    "pallets": [
+      {
+        "pallet_tag_id": "12312321323213",
+        "pallet_name": "ABC"
+      },
+      {
+        "pallet_tag_id": "12312321323214",
+        "pallet_name": "ABC1"
+      }
+    ],
+    "containers": [
+      {
+        "container_tag_id": "12334234324555",
+        "container_name": "C2"
+      },
+      {
+        "container_tag_id": "123342343244556",
+        "container_name": "C3"
+      }
+    ]
+  }
+}

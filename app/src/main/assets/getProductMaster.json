@@ -1,0 +1,16 @@
+{
+  "status": true,
+  "message": null,
+  "data": [
+    {
+      "tagid": "140211111111111111111111",
+      "name": "pallet1",
+      "type": "Pallet"
+    },
+    {
+      "tagid": "140411111111111111111112",
+      "name": "Bin1",
+      "type": "Bin"
+    }
+  ]
+}

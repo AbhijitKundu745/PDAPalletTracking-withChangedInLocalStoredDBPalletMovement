@@ -1,0 +1,81 @@
+{
+  "status": true,
+  "message": "",
+  "data": [{
+    "tag_id": "B1",
+    "name": "B1",
+    "type": "carton"
+  },{
+    "tag_id": "B2",
+    "name": "B2",
+    "type": "carton"
+  },
+    {
+      "tag_id": "B3",
+      "name": "B3",
+      "type": "carton"
+    },{
+      "tag_id": "B4",
+      "name": "B4",
+      "type": "carton"
+    },
+    {
+      "tag_id": "B5",
+      "name": "B5",
+      "type": "carton"
+    },{
+      "tag_id": "B6",
+      "name": "B6",
+      "type": "carton"
+    },
+    {
+      "tag_id": "B7",
+      "name": "B7",
+      "type": "carton"
+    },{
+      "tag_id": "B8",
+      "name": "B8",
+      "type": "carton"
+    },
+    {
+      "tag_id": "B9",
+      "name": "B9",
+      "type": "carton"
+    },{
+      "tag_id": "B10",
+      "name": "B10",
+      "type": "carton"
+    },
+    {
+      "tag_id": "150211111111111111111111",
+      "name": "Pallet1",
+      "type": "pallet"
+    },
+    {
+      "tag_id": "150211111111111111111112",
+      "name": "Pallet2",
+      "type": "pallet"
+    },
+    {
+      "tag_id": "150211111111111111111113",
+      "name": "Pallet3",
+      "type": "pallet"
+    },
+    {
+      "tag_id": "150211111111111111111114",
+      "name": "Pallet4",
+      "type": "pallet"
+    },
+    {
+      "tag_id": "150311111111111111111111",
+      "name": "Rack1",
+      "type": "rack"
+    },
+    {
+      "tag_id": "150311111111111111111112",
+      "name": "Rack2",
+      "type": "rack"
+    }
+
+  ]
+}

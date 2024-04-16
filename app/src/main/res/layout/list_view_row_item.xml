@@ -1,0 +1,25 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/linear_bg"
+     >
+
+    <TextView
+        android:id="@+id/textViewItem"
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:layout_alignParentTop="true"
+        android:padding="10dp"
+        android:text="Item name here..."
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/textViewItem1"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@+id/textViewItem"
+        android:text="Item name here..."
+        android:textColor="#FFFFFF"
+        android:textSize="1sp" />
+
+</RelativeLayout>

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+<androidx.appcompat.widget.LinearLayoutCompat
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/page_background"
+    tools:context=".AssetMappingActivity">
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/banner"/>
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_margin="10dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/red"
+            android:textSize="18sp"
+            android:text="Asset Name *"/>
+        <gr.escsoft.michaelprimez.searchablespinner.SearchableSpinner
+            android:id="@+id/spAsset"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            app:StartSearchTintColor="@color/black"
+            android:background="@drawable/edit_text_background"
+            app:DoneSearchTintColor="@android:color/black"
+            app:RevealViewBackgroundColor="@android:color/transparent"
+            app:SearchViewBackgroundColor="@android:color/transparent"
+            app:ShowBorders="true"
+            app:SearchViewTextColor="@color/black"
+            app:NoItemsFoundText=""
+            app:RevealEmptyText="Select Asset"
+            app:DividerHeight="1dp"
+            android:soundEffectsEnabled="true"
+            app:SearchHintText="Tap to search"
+            app:SpinnerExpandHeight="200dp"
+            android:layout_marginBottom="5dp"
+            />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/red"
+            android:textSize="18sp"
+            android:text="Asset type name"/>
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/edtAssetType"
+            android:layout_width="match_parent"
+            android:layout_height="49dp"
+            android:paddingLeft="10dp"
+            android:clickable="false"
+            android:cursorVisible="false"
+            android:focusable="false"
+            android:enabled="false"
+            android:textColor="@color/black"
+            android:focusableInTouchMode="false"
+            android:background="@drawable/edittext_grey_background"
+            android:hint="Asset Type Name" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/red"
+            android:textSize="18sp"
+            android:text="Serial Number *"/>
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:padding="1dp"
+            android:background="@drawable/edittext_grey_background"
+            android:layout_height="50dp">
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/edtRfidNumber"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="49dp"
+                android:paddingLeft="10dp"
+                android:editable="false"
+                android:enabled="false"
+                android:textColor="@color/black"
+                android:digits="0123456789"
+                android:hint="Scan RFID Tag"
+                android:background="@drawable/edittext_grey_background"/>
+            <ImageView
+                android:id="@+id/imgStatus"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_gravity="center"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:src="@drawable/rfidscan"/>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_gravity="bottom"
+            android:gravity="bottom"
+            android:layout_height="50dp">
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnRegister"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:layout_marginRight="5dp"
+                android:gravity="center"
+                android:text="Register"
+                android:textColor="@color/black"
+                android:background="@drawable/round_button_green"
+                android:layout_height="45dp"/>
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnClear"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:textColor="@color/black"
+                android:layout_marginLeft="5dp"
+                android:layout_height="45dp"
+                android:background="@drawable/round_button_red"
+                android:text="Clear"/>
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnPower"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:textColor="@color/black"
+                android:layout_marginLeft="5dp"
+                android:layout_height="45dp"
+                android:background="@drawable/round_button_green"
+                android:text="Power"/>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnInventory"
+            android:layout_width="match_parent"
+            android:layout_gravity="center"
+            android:layout_marginRight="5dp"
+            android:gravity="center"
+            android:visibility="gone"
+            android:text="Register"
+            android:textColor="@color/black"
+            android:background="@drawable/round_button_green"
+            android:layout_height="45dp"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnStopInventory"
+            android:layout_width="match_parent"
+            android:layout_gravity="center"
+            android:layout_marginRight="5dp"
+            android:gravity="center"
+            android:visibility="gone"
+            android:text="Register"
+            android:textColor="@color/black"
+            android:background="@drawable/round_button_green"
+            android:layout_height="45dp"/>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</androidx.appcompat.widget.LinearLayoutCompat>
+</layout>

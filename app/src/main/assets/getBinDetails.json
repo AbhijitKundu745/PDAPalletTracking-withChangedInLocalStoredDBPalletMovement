@@ -1,0 +1,20 @@
+{
+  "status": true,
+  "message": " ",
+  "data": [
+    {
+      "ItemDescription": "GHEE 500MlxJN - TN",
+      "BatchID": "2148795",
+      "BinName": "R1G1",
+      "BatchID": "Batch-1",
+      "Qty": 50
+    },
+    {
+      "ItemDescription": "GHEE 500MlxJN11 - TN",
+      "BatchID": "2148796",
+      "BatchID": "Batch-2",
+      "BinName": "R1G2",
+      "Qty": 51
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "status": true,
+  "message": "",
+  "data": [{
+    "pallet_tag_id": "150211111111111111111111",
+    "pallet_name": "Pallet1",
+    "asset_number": "B1",
+    "status": true,
+    "message": ""
+  },
+    {
+      "pallet_tag_id": "150211111111111111111111",
+      "pallet_name": "Pallet1",
+      "asset_number": "B2",
+      "status": true,
+      "message": ""
+    },
+    {
+      "pallet_tag_id": "150211111111111111111111",
+      "pallet_name": "Pallet1",
+      "asset_number": "B3",
+      "status": true,
+      "message": ""
+    },
+    {
+      "pallet_tag_id": "150211111111111111111112",
+      "pallet_name": "Pallet2",
+      "asset_number": "B5",
+      "status": false,
+      "message": "Already mapped with pallet2"
+    }
+  ]
+
+}
