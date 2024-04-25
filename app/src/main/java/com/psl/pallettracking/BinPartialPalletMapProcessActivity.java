@@ -92,14 +92,13 @@ public class BinPartialPalletMapProcessActivity extends AppCompatActivity {
 
         db = new DatabaseHandler(context);
         // setContentView(R.layout.activity_bin_partial_pallet_map_process);
+        SharedPreferencesManager.setPower(context,10);
         workOrderNumber = getIntent().getStringExtra("WorkOrderNumber");
         workOrderType = getIntent().getStringExtra("WorkOrderType");
         DRNNo = getIntent().getStringExtra("DRN");
-
         binding.textDCNo.setText(DRNNo);
 
         getWorkOrderItemDetails(workOrderNumber, workOrderType);
-
         binding.edtSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {

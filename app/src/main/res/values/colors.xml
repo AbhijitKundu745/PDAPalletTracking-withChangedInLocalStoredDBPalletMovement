@@ -21,7 +21,6 @@
     <color name="my_black">#000000</color>
     <color name="my_gray">#AAAAAA</color>
 
-
     <color name="light_gray">#585858</color>
     <!-- boh foh -->
     <color name="boh">#FCAA1B</color>
@@ -89,6 +88,8 @@
     <color name="lightblue">#0083FF</color>
     <color name="orange">#FF5900</color>
     <color name="orange1">#F56E25</color>
+    <color name="wine">#550000</color>
+    <color name="goldenBlack">#886300</color>
 
     <color name="full_transparent">#00000000</color>
     <color name="half_transparent">#aa000000</color>

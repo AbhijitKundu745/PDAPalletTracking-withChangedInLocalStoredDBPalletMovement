@@ -154,6 +154,8 @@ public class APIConstants {
 
  public static final String K_SOURCE_PALLET_TAG_ID = "SourcePalletTagID";
  public static final String K_DESTINATION_PALLET_TAG_ID = "DestinationPalletTagID";
+ public static final String K_SOURCE_BIN_TAG_ID = "SourceBinTagID";
+ public static final String K_DESTINATION_BIN_TAG_ID = "DestinationBinTagID";
  public static final String DATA = "data";
  public static final String STATUS = "status";
  public static final String MESSAGE = "message";

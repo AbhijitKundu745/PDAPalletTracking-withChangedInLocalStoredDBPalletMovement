@@ -128,7 +128,7 @@ public class AssetPalletWithItemActivity extends AppCompatActivity {
         qrAdapter.notifyDataSetChanged();
         //setDefault();
 
-        SharedPreferencesManager.setPower(context, 20);
+        SharedPreferencesManager.setPower(context, 10);
 
         binding.btnUpload.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -65,13 +65,15 @@ public class ItemMovementActivity extends AppCompatActivity implements DecodeInf
     private DatabaseHandler db;
     String SOURCE_PALLET_TAG_ID = "";
     String DEST_PALLET_TAG_ID = "";
+    String SOURCE_BIN_TAG_ID = "";
+    String DEST_BIN_TAG_ID = "";
     String CURRENT_EPC = "";
     String START_DATE = "";
     String END_DATE = "";
     boolean IS_SOURCE_PALLET_TAG_SCANNED = false;
     boolean IS_DEST_PALLET_TAG_SCANNED = false;
-    boolean SOURCE_PALLET_TAG_SCANNED = false;
-    boolean DEST_PALLET_TAG_SCANNED = false;
+    boolean IS_SOURCE_BIN_TAG_SCANNED = false;
+    boolean IS_DEST_BIN_TAG_SCANNED = false;
     boolean IS_SCANNING_LOCKED = false;
     boolean IS_SCANNING_ALREADY_STARTED = false;
     private boolean allow_trigger_to_press = true;
@@ -83,7 +85,6 @@ public class ItemMovementActivity extends AppCompatActivity implements DecodeInf
     private List<String> barcodes = new ArrayList<>();
     Scanner scanner;
     ItemMovementAdapter adapter;
-    String[] barcodeArray = {"B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10"};
 
     @Override
     public void onBackPressed() {
@@ -104,7 +105,7 @@ public class ItemMovementActivity extends AppCompatActivity implements DecodeInf
         getSupportActionBar().hide();
         cd = new ConnectionDetector(context);
         db = new DatabaseHandler(context);
-
+        SharedPreferencesManager.setPower(context,10);
         adapter = new ItemMovementAdapter(context, barcodeList);
         binding.LVqrCodes.setAdapter(adapter);
 
@@ -117,9 +118,28 @@ public class ItemMovementActivity extends AppCompatActivity implements DecodeInf
         binding.btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (barcodeList.size() > 0) {
-                    showCustomConfirmationDialog("Are you sure you want to upload", "UPLOAD");
+                if(IS_SOURCE_PALLET_TAG_SCANNED){
+                    if (IS_SOURCE_BIN_TAG_SCANNED){
+                        if(IS_DEST_PALLET_TAG_SCANNED){
+                            if (IS_DEST_BIN_TAG_SCANNED){
+                                if (barcodeList.size() > 0) {
+                                    showCustomConfirmationDialog("Are you sure you want to upload", "UPLOAD");
+                               } else{
+                                    AssetUtils.showCommonBottomSheetErrorDialog(context,"Please Scan the barcode");
+                               }
+                            } else{
+                                AssetUtils.showCommonBottomSheetErrorDialog(context,"Please Scan Destination Bin Tag");
+                            }
+                        } else{
+                            AssetUtils.showCommonBottomSheetErrorDialog(context,"Please Scan Destination Pallet Tag");
+                        }
+                    }  else{
+                        AssetUtils.showCommonBottomSheetErrorDialog(context,"Please Scan Source Bin Tag");
+                    }
+                } else{
+                    AssetUtils.showCommonBottomSheetErrorDialog(context,"Please Scan Source Pallet Tag");
                 }
+
             }
         });
 
@@ -157,7 +177,7 @@ public class ItemMovementActivity extends AppCompatActivity implements DecodeInf
                     if (pressed) {
                         if (!IS_SCANNING_LOCKED) {
                             SCANNED_EPC = "";
-                            if (IS_SOURCE_PALLET_TAG_SCANNED && IS_DEST_PALLET_TAG_SCANNED) {
+                            if (IS_SOURCE_PALLET_TAG_SCANNED && IS_DEST_PALLET_TAG_SCANNED && IS_SOURCE_BIN_TAG_SCANNED && IS_DEST_BIN_TAG_SCANNED) {
                                 //OPEN BARCODE SCANNER
                                 if (IS_SCANNING_ALREADY_STARTED) {
                                     IS_SCANNING_ALREADY_STARTED = false;
@@ -303,7 +323,20 @@ public class ItemMovementActivity extends AppCompatActivity implements DecodeInf
                                 IS_DEST_PALLET_TAG_SCANNED = true;
                                 Log.e("DestPallet", DEST_PALLET_TAG_ID);
                             }
-                    } else {
+                    } else if (assettpid.equalsIgnoreCase("03")) {
+                        if (!IS_SOURCE_BIN_TAG_SCANNED) {
+                            SOURCE_BIN_TAG_ID = CURRENT_EPC;
+                            String SourceBinName = db.getProductNameByProductTagId(SOURCE_BIN_TAG_ID);
+                            binding.edtSourceBinNumber.setText(SourceBinName);
+                            IS_SOURCE_BIN_TAG_SCANNED = true;
+                        } else if(!IS_DEST_BIN_TAG_SCANNED){
+                            DEST_BIN_TAG_ID = CURRENT_EPC;
+                            String DestBinName = db.getProductNameByProductTagId(DEST_BIN_TAG_ID);
+                            binding.edtDestBinNumber.setText(DestBinName);
+                            IS_DEST_BIN_TAG_SCANNED = true;
+                        }
+                    }
+                    else {
                         AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
                     }
                 } else {
@@ -331,9 +364,13 @@ public class ItemMovementActivity extends AppCompatActivity implements DecodeInf
                 changeImageStatusToRfidScan();
                 binding.edtSourcePalletNumber.setText("");
                 binding.edtDestPalletNumber.setText("");
+                binding.edtSourceBinNumber.setText("");
+                binding.edtDestBinNumber.setText("");
                 allow_trigger_to_press = true;
                 IS_SOURCE_PALLET_TAG_SCANNED = false;
                 IS_DEST_PALLET_TAG_SCANNED = false;
+                IS_SOURCE_BIN_TAG_SCANNED = false;
+                IS_DEST_BIN_TAG_SCANNED = false;
                 binding.textCount.setVisibility(View.GONE);
                 if (epcs != null) {
                     epcs.clear();
@@ -531,9 +568,7 @@ public class ItemMovementActivity extends AppCompatActivity implements DecodeInf
                     setDefault();
                 } else if (action.equals("BACK")) {
                     setDefault();
-                    finishAffinity();
-                    Intent i = new Intent(ItemMovementActivity.this, DashboardActivity.class);
-                    startActivity(i);
+                    finish();
 
                 } else if (action.equals("DELETE")) {
                     barcodeList.remove(CURRENT_INDEX);
@@ -580,6 +615,8 @@ public class ItemMovementActivity extends AppCompatActivity implements DecodeInf
                     jsonobject.put(APIConstants.K_INVENTORY_COUNT, barcodeList.size());
                     jsonobject.put(APIConstants.K_SOURCE_PALLET_TAG_ID, SOURCE_PALLET_TAG_ID);
                     jsonobject.put(APIConstants.K_DESTINATION_PALLET_TAG_ID, DEST_PALLET_TAG_ID);
+                    jsonobject.put(APIConstants.K_SOURCE_BIN_TAG_ID, SOURCE_BIN_TAG_ID);
+                    jsonobject.put(APIConstants.K_DESTINATION_BIN_TAG_ID, DEST_BIN_TAG_ID);
                     JSONArray js = new JSONArray();
                     for (int i = 0; i < barcodeList.size(); i++) {
                         JSONObject qrcodeObject = new JSONObject();

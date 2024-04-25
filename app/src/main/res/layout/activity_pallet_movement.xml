@@ -26,7 +26,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="0.4"
+                android:layout_weight="0.8"
                 android:orientation="horizontal"
                 >
                 <LinearLayout
@@ -39,11 +39,11 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="0.8"
+                        android:layout_weight="1"
                         android:text="Pallet Name"
                         android:textAlignment="center"
                         android:textStyle="bold"
-                        android:textSize="20sp" />
+                        android:textSize="15sp" />
                     <TextView
                         android:id="@+id/textPalletNo"
                         android:layout_width="match_parent"
@@ -67,11 +67,11 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight="0.8"
-                        android:text="Destination"
+                        android:layout_weight="1"
+                        android:text="Suggested Destination"
                         android:textAlignment="center"
                         android:textStyle="bold"
-                        android:textSize="20sp" />
+                        android:textSize="15sp" />
                     <TextView
                         android:id="@+id/textDestination"
                         android:layout_width="match_parent"
@@ -85,6 +85,35 @@
                         android:background="@color/lighter_grey"
                         android:layout_marginTop="5dp"/>
                 </LinearLayout>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="2dp">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:text="Scanned Destination"
+                        android:textAlignment="center"
+                        android:textStyle="bold"
+                        android:textSize="15sp" />
+                    <TextView
+                        android:id="@+id/textScannedDestination"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1.2"
+                        android:text=""
+                        android:textAlignment="center"
+                        android:paddingTop="5dp"
+                        android:textStyle="bold"
+                        android:textSize="20sp"
+                        android:background="@color/lighter_grey"
+                        android:layout_marginTop="5dp"/>
+                </LinearLayout>
+
             </LinearLayout>
             <TextView
                 android:layout_width="match_parent"
@@ -185,7 +214,7 @@
                 android:id="@+id/rv_pallet"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_weight="2"
                 android:padding="5dp"
                 android:scrollbars="vertical"/>
             <TextView

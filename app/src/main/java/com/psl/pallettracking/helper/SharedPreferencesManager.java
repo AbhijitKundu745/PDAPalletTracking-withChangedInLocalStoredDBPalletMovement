@@ -39,7 +39,7 @@ public class SharedPreferencesManager {
         return getSharedPreferences(context).getBoolean(IS_LOGIN_SAVED, false);
     }
     public static int getPollingTimer(Context context) {
-        return getSharedPreferences(context).getInt(POLLING_TIMER, 2000);
+        return getSharedPreferences(context).getInt(POLLING_TIMER, 1500);
     }
 
     public static void setPollingTimer(Context context, int newValue) {
@@ -50,7 +50,7 @@ public class SharedPreferencesManager {
     }
 
     public static int getPower(Context context) {
-        return getSharedPreferences(context).getInt(SAVED_POWER, 20);
+        return getSharedPreferences(context).getInt(SAVED_POWER, 10);
     }
 
     public static void setPower(Context context, int newValue) {

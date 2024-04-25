@@ -100,6 +100,21 @@ public class LoadingUnloadingActivityHelpers {
         }
         return palletName;
     }
+    public static String getPalletTagByPalletTagId(String palletTagId, List<WorkOrderListItem> workOrderListItemList) {
+        String palletID = "-";
+        if (workOrderListItemList != null) {
+            for (WorkOrderListItem item : workOrderListItemList) {
+                // Check if the string is equal to any of the fields of the current item
+                // Check if the current item's palletTagId matches the one we're looking for
+                if (palletTagId.equals(item.getPalletTagId())) {
+                    // If found, retrieve the loadingAreaTagId and break the loop
+                    palletID = item.getPalletTagId();
+                    break;
+                }
+            }
+        }
+        return palletID;
+    }
 
     public static String getU0LoadingAreaTagIdForPallet(String palletTagId, List<WorkOrderListItem> workOrderListItemList) {
         String loadingAreaTagId = "-";
@@ -153,6 +168,9 @@ public class LoadingUnloadingActivityHelpers {
                     }
                     if(type.equalsIgnoreCase("L1")){
                         binLocationTagId = item.getLoadingAreaName();
+                    }
+                    if(type.equalsIgnoreCase("I0")){
+                        binLocationTagId = item.getBinLocationName();
                     }
 
                     break;

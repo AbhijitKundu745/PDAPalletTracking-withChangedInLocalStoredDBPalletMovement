@@ -81,6 +81,10 @@ public class WorkOrderDetailsAdapter extends RecyclerView.Adapter<RecyclerView.V
                 itemViewHolder.itemPickup.setText(order.getDestinationLocationName());
                 itemViewHolder.itemPickup.setSelected(true);
                 break;
+            case "I0":
+                itemViewHolder.itemPickup.setText(order.getLoadingAreaName());
+                itemViewHolder.itemPickup.setSelected(true);
+                break;
         }
 
         itemViewHolder.itemWOType.setText(order.getWorkorderType());
@@ -121,11 +125,34 @@ public class WorkOrderDetailsAdapter extends RecyclerView.Adapter<RecyclerView.V
                 itemViewHolder.itemWOType.setVisibility(View.VISIBLE);
                 itemViewHolder.itemStatus.setVisibility(View.VISIBLE);
                 break;
+            case "I0":
+                itemViewHolder.itemSerialNo.setVisibility(View.VISIBLE);
+                itemViewHolder.itemPalletNo.setVisibility(View.VISIBLE);
+                itemViewHolder.itemPickup.setVisibility(View.VISIBLE);
+                itemViewHolder.itemWOType.setVisibility(View.VISIBLE);
+                itemViewHolder.itemStatus.setVisibility(View.VISIBLE);
+                break;
         }
-
-        if ((position) % 2 == 0) {
+if(order.getWorkorderType().equalsIgnoreCase("I0")){
+    itemViewHolder.itemSerialNo.setTextColor(context.getResources().getColor(R.color.white));
+    itemViewHolder.itemPalletNo.setTextColor(context.getResources().getColor(R.color.white));
+    itemViewHolder.itemPickup.setTextColor(context.getResources().getColor(R.color.white));
+    itemViewHolder.itemWOType.setTextColor(context.getResources().getColor(R.color.white));
+    itemViewHolder.itemStatus.setTextColor(context.getResources().getColor(R.color.white));
+    itemViewHolder.itemView.setBackgroundColor(context.getResources().getColor(R.color.orange));
+} else if ((position) % 2 == 0) {
+    itemViewHolder.itemSerialNo.setTextColor(context.getResources().getColor(R.color.black));
+    itemViewHolder.itemPalletNo.setTextColor(context.getResources().getColor(R.color.black));
+    itemViewHolder.itemPickup.setTextColor(context.getResources().getColor(R.color.black));
+    itemViewHolder.itemWOType.setTextColor(context.getResources().getColor(R.color.black));
+    itemViewHolder.itemStatus.setTextColor(context.getResources().getColor(R.color.black));
             itemViewHolder.itemView.setBackgroundColor(context.getResources().getColor(R.color.red3));
         } else {
+    itemViewHolder.itemSerialNo.setTextColor(context.getResources().getColor(R.color.black));
+    itemViewHolder.itemPalletNo.setTextColor(context.getResources().getColor(R.color.black));
+    itemViewHolder.itemPickup.setTextColor(context.getResources().getColor(R.color.black));
+    itemViewHolder.itemWOType.setTextColor(context.getResources().getColor(R.color.black));
+    itemViewHolder.itemStatus.setTextColor(context.getResources().getColor(R.color.black));
             itemViewHolder.itemView.setBackgroundColor(context.getResources().getColor(R.color.green1));
         }
     }

@@ -3,6 +3,7 @@ package com.psl.pallettracking.database;
 
 import static com.psl.pallettracking.ext.DataExt.typePallet;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -14,15 +15,18 @@ import android.util.Log;
 
 import com.psl.pallettracking.adapters.DashboardModel;
 import com.psl.pallettracking.adapters.MyObject;
+import com.psl.pallettracking.bean.TagWithDestination;
 import com.psl.pallettracking.helper.AppConstants;
 import com.psl.pallettracking.bean.TagBean;
 import com.psl.pallettracking.bean.WorkOrderUploadTagBean;
+import com.psl.pallettracking.helper.AssetUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class DatabaseHandler extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 10;
+    private static final int DATABASE_VERSION = 16;
     private static final String DATABASE_NAME = "PSL_PALLET_TRACKING-DB";
 
     private static final String TABLE_ASSET_MASTER = "Asset_Master_Table";
@@ -36,7 +40,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     private static final String TABLE_TAG_MASTER = "Tag_Master_Table";
     private static final String TABLE_OFFLINE_TAG_MASTER = "Offline_Tag_Master_Table";
-
+    private static final String TABLE_OFFLINE_TAG_WITH_DESTINATION = "Offline_Tag_Table_With_Destination";
     private static final String TABLE_PARTIAL_DISPATCH = "dispatch_pallet_data";
     private static final String KEY_ID = "id";
     private static final String KEY_JSON_DATA = "KEY_JSON_DATA";
@@ -74,6 +78,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String K_TIMES = "K_TIMES";
     private static final String K_ANTEANA = "K_ANTEANA";
     private static final String K_ADDITIONAL_DATA = "K_ADDITIONAL_DATA";
+    private static final String K_DESTINATION_EPC = "K_DESTINATION_EPC";
 
     private static final String K_TAG_TYPE = "K_TAG_TYPE";
     private static final String K_DATE_TIME = "K_DATE_TIME";
@@ -176,6 +181,17 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         String CREATE_DISPATCH_PALLET_TABLE = "CREATE TABLE " + TABLE_PARTIAL_DISPATCH + "("
                 + KEY_ID + " INTEGER PRIMARY KEY," + KEY_JSON_DATA + " TEXT)";
 
+        String CREATE_OFFLINE_TAG_WITH_DESTINATION_TABLE = "CREATE TABLE "
+                + TABLE_OFFLINE_TAG_WITH_DESTINATION
+                + "("
+                + K_BATCH_ID + " TEXT,"//0
+                + K_WORK_ORDER_NUMBER + " TEXT,"//0
+                + K_EPC + " TEXT,"//0
+                + K_DESTINATION_EPC + " TEXT,"//1
+                + K_WORK_ORDER_TYPE + " TEXT,"//1
+                + K_DATE_TIME + " TEXT"//1
+                + ")";
+
         db.execSQL(CREATE_ASSET_MASTER_TABLE);
         db.execSQL(CREATE_ASSET_TYPE_MASTER_TABLE);
         db.execSQL(CREATE_LOCATION_MASTER_TABLE);
@@ -187,6 +203,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.execSQL(CREATE_TAG_MASTER_TABLE);
         db.execSQL(CREATE_OFFLINE_TAG_MASTER_TABLE);
         db.execSQL(CREATE_DISPATCH_PALLET_TABLE);
+        db.execSQL(CREATE_OFFLINE_TAG_WITH_DESTINATION_TABLE);
 
     }
 
@@ -205,6 +222,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_OFFLINE_TAG_MASTER);
 
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PARTIAL_DISPATCH);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_OFFLINE_TAG_WITH_DESTINATION);
         // Create tables again
         onCreate(db);
     }
@@ -334,6 +352,19 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void deleteAssetMaster() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_ASSET_MASTER, null, null);
+        db.close();
+    }
+    public void deleteOfflineTagWithDestinationTableForBatch(String batchID) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Specify the WHERE clause and arguments based on batchId
+        String whereClause = "K_BATCH_ID = ?";
+        String[] whereArgs = {batchID};
+
+        // Delete rows with the specified condition
+        db.delete(TABLE_OFFLINE_TAG_WITH_DESTINATION, whereClause, whereArgs);
+
+        // Close the database
         db.close();
     }
 
@@ -1131,6 +1162,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.delete(TABLE_OFFLINE_TAG_MASTER, null, null);
         db.close();
     }
+    public void deleteOfflineTagWithDestination() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_OFFLINE_TAG_WITH_DESTINATION, null, null);
+        db.close();
+    }
 
     public void deleteOfflineTagMasterForBatch(String batchId) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -1241,7 +1277,32 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             }
         }
     }
+    public void storeOfflineTagWithDestination(TagWithDestination tagWithDestination) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransactionNonExclusive();
 
+        try {
+                ContentValues values = new ContentValues();
+                values.put(K_BATCH_ID, tagWithDestination.getBatchID());
+                values.put(K_WORK_ORDER_NUMBER, tagWithDestination.getWorkOrderNo());
+                values.put(K_EPC, tagWithDestination.getPalletTag());
+                values.put(K_DESTINATION_EPC, tagWithDestination.getDestinationTag());
+                values.put(K_WORK_ORDER_TYPE, tagWithDestination.getWorkOrderType());
+                values.put(K_DATE_TIME, tagWithDestination.getDateTime());
+
+                db.insertWithOnConflict(TABLE_OFFLINE_TAG_WITH_DESTINATION, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+
+
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.e("ASSETMASTEREXC", e.getMessage());
+        } finally {
+            if (db != null) {
+                db.endTransaction();
+                db.close();
+            }
+        }
+    }
     public long getTagMasterCount() {
         SQLiteDatabase db = this.getReadableDatabase(); // Use getReadableDatabase() instead of getWritableDatabase() since you are performing a read operation
         try {
@@ -1789,6 +1850,130 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             db.close();
         }
     }
+    public TagWithDestination getTagWithDestinationByPalletTagId(String batchID) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        TagWithDestination tagWithDestination = null;
+try{
+    String query = "SELECT * FROM " + TABLE_OFFLINE_TAG_WITH_DESTINATION +
+            " WHERE " + K_BATCH_ID + "=? " +
+            " ORDER BY " + K_DATE_TIME + " ASC";
 
+    cursor = db.rawQuery(query, new String[]{batchID});
+    if (cursor != null && cursor.moveToFirst()) {
+        tagWithDestination = new TagWithDestination(
+                cursor.getString(cursor.getColumnIndexOrThrow(K_BATCH_ID)),
+                cursor.getString(cursor.getColumnIndexOrThrow(K_WORK_ORDER_NUMBER)),
+                cursor.getString(cursor.getColumnIndexOrThrow(K_EPC)),
+                cursor.getString(cursor.getColumnIndexOrThrow(K_DESTINATION_EPC)),
+                cursor.getString(cursor.getColumnIndexOrThrow(K_WORK_ORDER_TYPE)),
+                cursor.getString(cursor.getColumnIndexOrThrow(K_DATE_TIME))
+        );
+    }
+} catch (Exception e){
+    Log.e("ASSETMASTEREXC", e.getMessage());
+} finally {
+    // Close the cursor and database
+    if (cursor != null) {
+        cursor.close();
+    }
+    db.close();
+}
+        return tagWithDestination;
+    }
+    public List<TagWithDestination> getAllTagWithDestinationDataForPallet(String batchId) {
+        List<TagWithDestination> tagList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
 
+        try {
+            // Specify the condition to retrieve data for a specific batchId
+            String selection = K_BATCH_ID + "=?";
+            String[] selectionArgs = {batchId};
+
+            // Query the database with the specified condition, ordering by K_DATE_TIME in ascending order
+            cursor = db.query(
+                    TABLE_OFFLINE_TAG_WITH_DESTINATION,
+                    null, // Columns (null means all columns)
+                    selection, // condition
+                    selectionArgs, // selectionArgs
+                    null, // groupBy
+                    null,
+                    K_DATE_TIME+ " ASC"
+            );
+
+            // Check if there are any rows
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    // Use the constructor of TagBean to create an object
+                    TagWithDestination tag = new TagWithDestination(
+                            cursor.getString(cursor.getColumnIndexOrThrow(K_BATCH_ID)),
+                            cursor.getString(cursor.getColumnIndexOrThrow(K_WORK_ORDER_NUMBER)),
+                            cursor.getString(cursor.getColumnIndexOrThrow(K_EPC)),
+                            cursor.getString(cursor.getColumnIndexOrThrow(K_DESTINATION_EPC)),
+                            cursor.getString(cursor.getColumnIndexOrThrow(K_WORK_ORDER_TYPE)),
+                            cursor.getString(cursor.getColumnIndexOrThrow(K_DATE_TIME))
+
+                    );
+                    // Add the TagBean object to the list
+                    tagList.add(tag);
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.e("ASSETMASTEREXC", e.getMessage());
+        } finally {
+            // Close the cursor and database
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
+        }
+
+        return tagList;
+    }
+    public String getTopBatch() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        String topBatchId = null;
+
+        try {
+            // Query the database to get the top row, ordering by K_DATE_TIME in ascending order
+            cursor = db.query(
+                    TABLE_OFFLINE_TAG_WITH_DESTINATION,
+                    new String[]{K_BATCH_ID}, // Columns to retrieve (only batch ID)
+                    null, // condition (null means no condition)
+                    null, // selectionArgs (null means no arguments)
+                    null, // groupBy
+                    null, // having
+                    K_DATE_TIME + " ASC", // orderBy
+                    "1" // limit to 1 row
+            );
+
+            // Check if there is a row
+            if (cursor != null && cursor.moveToFirst()) {
+                // Retrieve the batch ID
+                topBatchId = cursor.getString(cursor.getColumnIndexOrThrow(K_BATCH_ID));
+            }
+        } catch (Exception e) {
+            Log.e("ASSETMASTEREXC", e.getMessage());
+        } finally {
+            // Close the cursor and database
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
+        }
+
+        return topBatchId;
+    }
+    public long getOfflineTagWithDestinationCount() {
+        SQLiteDatabase db = this.getReadableDatabase(); // Use getReadableDatabase() instead of getWritableDatabase() since you are performing a read operation
+        try {
+            return DatabaseUtils.queryNumEntries(db, TABLE_OFFLINE_TAG_WITH_DESTINATION);
+        } finally {
+            if (db != null) {
+                db.close();
+            }
+        }
+    }
 }

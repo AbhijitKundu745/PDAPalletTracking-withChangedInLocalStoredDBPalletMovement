@@ -3,6 +3,7 @@ package com.psl.pallettracking;
 import static com.psl.pallettracking.ext.DataExt.getCategoryID;
 import static com.psl.pallettracking.ext.DataExt.getTagType;
 import static com.psl.pallettracking.ext.DataExt.typeBean;
+import static com.psl.pallettracking.ext.DataExt.typeLoadingArea;
 import static com.psl.pallettracking.helper.AssetUtils.hideProgressDialog;
 import static com.psl.pallettracking.helper.AssetUtils.showProgress;
 
@@ -29,18 +30,16 @@ import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.psl.pallettracking.adapters.WorkOrderDetailsAdapter;
+import com.psl.pallettracking.bean.TagWithDestination;
 import com.psl.pallettracking.bean.WorkOrderListItem;
-import com.psl.pallettracking.bean.WorkOrderUploadTagBean;
 import com.psl.pallettracking.database.DatabaseHandler;
 import com.psl.pallettracking.databinding.ActivityPalletMovementBinding;
-import com.psl.pallettracking.ext.DataExt;
 import com.psl.pallettracking.helper.APIConstants;
 import com.psl.pallettracking.helper.AssetUtils;
 import com.psl.pallettracking.helper.LoadingUnloadingActivityHelpers;
 import com.psl.pallettracking.helper.SharedPreferencesManager;
 import com.psl.pallettracking.rfid.RFIDInterface;
 import com.psl.pallettracking.rfid.SeuicGlobalRfidHandler;
-import com.psl.pallettracking.viewHolder.OrderDetails;
 import com.psl.pallettracking.bean.TagBean;
 import com.seuic.uhf.EPC;
 
@@ -48,10 +47,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -70,7 +66,7 @@ public class PalletMovementActivity extends AppCompatActivity {
     private String workOrderType = "";
     private SeuicGlobalRfidHandler rfidHandler;
     boolean IS_API_CALL_IS_IN_PROGRESS = false;
-    private int POLLING_TIMER = 10000;
+    private int POLLING_TIMER = 15000;
     String SCANNED_EPC = "";
     int SCANNED_RSSI = Integer.MIN_VALUE;
     private int lastRssi = Integer.MIN_VALUE;
@@ -81,6 +77,9 @@ public class PalletMovementActivity extends AppCompatActivity {
     private String LAST_SUCCEED_PALLET = "";
     private String PALLET_ID = "";
     private boolean isRfidReadingIsInProgress = false;
+    private String PalletTag = "";
+    boolean IS_PALLET_TAG_SCANNED = false;
+    private String DestinationTag = "";
 
 
     @Override
@@ -90,13 +89,13 @@ public class PalletMovementActivity extends AppCompatActivity {
         binding = DataBindingUtil.setContentView(PalletMovementActivity.this, R.layout.activity_pallet_movement);
         setTitle("USER LOGIN");
         getSupportActionBar().hide();
-
+        SharedPreferencesManager.setPower(context,10);
         orderDetailsList = new ArrayList<>();
         recOrderDetailsList = new ArrayList<>();
         disOrderDetailsList = new ArrayList<>();
 
         db = new DatabaseHandler(context);
-        //db.deleteOfflineTagMaster();
+        //db.deleteOfflineTagWithDestination();
         binding.rvPallet.setLayoutManager(new GridLayoutManager(PalletMovementActivity.this, 1));
         if (orderDetailsList != null) {
             orderDetailsList.clear();
@@ -117,6 +116,7 @@ public class PalletMovementActivity extends AppCompatActivity {
         POLLING_TIMER = SharedPreferencesManager.getPollingTimer(PalletMovementActivity.this);
         binding.textDestination.setText("");
         binding.textPalletNo.setText("");
+        binding.textScannedDestination.setText("");
         initUHF();
 
         binding.btnPower.setOnClickListener(new View.OnClickListener() {
@@ -153,7 +153,7 @@ public class PalletMovementActivity extends AppCompatActivity {
                         // binding.textPalletNo.setText("");
                         //new GetWorkOrderDetailsTask(LoadingUnloadingActivity.this).execute();
                         if (!isRfidReadingIsInProgress) {
-                            if (db.getOfflineTagMasterCount() > 0) {
+                            if (db.getOfflineTagWithDestinationCount()>0) {
                                 new Thread(new Runnable() {
                                     @Override
                                     public void run() {
@@ -305,7 +305,7 @@ public class PalletMovementActivity extends AppCompatActivity {
                                 || AssetUtils.getTagType(SCANNED_EPC).equals(AssetUtils.TYPE_LOADING_AREA)) {
 
                             TagBean tagBean = new TagBean(
-                                    SCANNED_EPC,
+                                    "1",
                                     SCANNED_EPC,
                                     SCANNED_RSSI,
                                     1,
@@ -313,29 +313,37 @@ public class PalletMovementActivity extends AppCompatActivity {
                                     "",
                                     getTagType(SCANNED_EPC),
                                     AssetUtils.getSystemDateTimeInFormatt()
-
-
                             );
-                            setListData(tagBean);
+                            if (tagBean != null && tagBean.getEpcId() != null) {
+                                setListData(tagBean);
+                            } else {
+                                isRfidReadingIsInProgress = false;
+                                AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
+                            }
 
                         } else {
+                            Log.e("AVZ1", SCANNED_EPC);
                             isRfidReadingIsInProgress = false;
                             AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
                         }
                     } else {
+                        Log.e("AVZ2", SCANNED_EPC);
                         isRfidReadingIsInProgress = false;
                         AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
                     }
                 } else {
+                    Log.e("AVZ3", SCANNED_EPC);
                     isRfidReadingIsInProgress = false;
                     AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
                 }
             } else {
+                Log.e("AVZ4", SCANNED_EPC);
                 isRfidReadingIsInProgress = false;
                 AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
             }
         } catch (Exception e) {
             Log.e("RFEXC",""+e.getMessage());
+            Log.e("AVZ5", SCANNED_EPC);
             e.printStackTrace();
             isRfidReadingIsInProgress = false;
             AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.no_rfid_error));
@@ -366,237 +374,190 @@ public class PalletMovementActivity extends AppCompatActivity {
         isRfidReadingIsInProgress = true;
     }
 
-    private void setListData(TagBean bean1) {
-        if (bean1 != null) {
-            isRfidReadingIsInProgress = true;
-            TagBean myBean = bean1;
-            String epcId = myBean.getEpcId();
-            final int rssiValue0 = myBean.getRssi();
-            int rssiValue = rssiValue0;
-            String antenaId = myBean.getAntenna();
-            int rssi = rssiValue;
-            if (rssi < 0) {
-                rssi = (-1) * rssi;
-                rssiValue = rssi;
-            } else {
 
-            }
-            myBean.setRssi(rssi);
-            if (!LoadingUnloadingActivityHelpers.isEpcPresentInWorkOrder(epcId, orderDetailsList)) {
-                //Wrong Tag Found, Start Long Buzzer
-                // buzzerForWrongTag();
-                // return;
-            }
-            List<TagBean> lst = new ArrayList<>();
-            lst.add(myBean);
-            if (myBean.getTagType().equalsIgnoreCase(typePallet)) {
-                String palletName = LoadingUnloadingActivityHelpers.getPalletNameByPalletTagId(epcId, orderDetailsList);
+private void setListData(TagBean bean1) {
+    if (bean1 != null) {
+        isRfidReadingIsInProgress = true;
+        TagBean myBean = bean1;
+        String epcId = myBean.getEpcId();
+        Log.e("EPCID",myBean.getEpcId());
+        final int rssiValue0 = myBean.getRssi();
+        int rssiValue = rssiValue0;
+        String antenaId = myBean.getAntenna();
+        int rssi = rssiValue;
+        if (rssi < 0) {
+            rssi = (-1) * rssi;
+            rssiValue = rssi;
+        } else {
 
-                CURRENT_WORK_ORDER_NUMBER = LoadingUnloadingActivityHelpers.getWorkOrderNumberByPalletTagId(epcId,orderDetailsList);
-                CURRENT_WORK_ORDER_TYPE = LoadingUnloadingActivityHelpers.getWorkOrderTypeByPalletTagId(epcId,orderDetailsList);
-                CURRENT_WORK_ORDER_STATUS = LoadingUnloadingActivityHelpers.getWorkOrderStatusByPalletTagId(epcId,orderDetailsList);
-                String destinationName = LoadingUnloadingActivityHelpers.getTagNameByOrderType(epcId,CURRENT_WORK_ORDER_TYPE,orderDetailsList);
-                binding.textPalletNo.setText(palletName);
-                binding.textDestination.setText(destinationName);
+        }
+        myBean.setRssi(rssi);
 
-                if (db.isPalletTagPresent()) {
-                    if (db.isEpcPresent(epcId)) {
-                        //pallet tag is present and it is old one then do nothing only update that tag data
-                        db.deletePalletTag(epcId);
-                        db.storeTagMaster(lst);
-                    } else {
-                        //Other pallet tag found, Now here need to check RSSI,and also check if other tags are scanned,,,, give rssi high preference, here other pallet tag is scanned
-                        try {
-                            long tagCount = db.getTagMasterCount();
-                            //Replace pallet tag only if other tags are not scanned
-                            if (tagCount == 1) {
-                                String oldRSSIString = db.getRSSIPalletEPC();
-                                int oldRSSI = Integer.parseInt(oldRSSIString);
-                                int newRSSI = rssiValue;
-                                if (oldRSSI < 0) {
-                                    oldRSSI = (-1) * oldRSSI;
-                                } else {
-                                    oldRSSI = oldRSSI;
-                                }
+        List<TagBean> lst = new ArrayList<>();
+        lst.add(myBean);
+        if (myBean.getTagType().equalsIgnoreCase(typePallet)) {
+            String palletName = LoadingUnloadingActivityHelpers.getPalletNameByPalletTagId(epcId, orderDetailsList);
 
-                                if (newRSSI < 0) {
-                                    newRSSI = (-1) * newRSSI;
-                                } else {
-                                    newRSSI = newRSSI;
-                                }
-                                if (newRSSI <= oldRSSI) {
-                                    //replace only new pallet tag with old pallet tag as he has greater RSSI and keep child tags as it is in transaction
-                                    db.deletePalletTag(epcId);
-                                    db.storeTagMaster(lst);
-                                    int finalRssiValue2 = rssiValue;
-                                 /*   new Thread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            sendCurrentScannedPallet(epcId, finalRssiValue2);
-                                        }
-                                    }).start();*/
-                                }
-                            }
-                        } catch (Exception ex) {
-                            Log.e("RSSIEXC", "" + ex.getMessage());
-                        }
-                    }
 
-                } else {
-                    db.storeTagMaster(lst);
-                }
-            } else {
-                if (db.isPalletTagPresent()) {
-                    isRfidReadingIsInProgress = true;
-                    //check here type of workorder and then get corrosponding child tags.
-                    // and check if current tag is corresponding to pallet tag then do action
-                    String palletTag = db.getPalletTag().getEpcId();
-                    Log.e("childtag",epcId);
+            CURRENT_WORK_ORDER_NUMBER = LoadingUnloadingActivityHelpers.getWorkOrderNumberByPalletTagId(epcId,orderDetailsList);
+            CURRENT_WORK_ORDER_TYPE = LoadingUnloadingActivityHelpers.getWorkOrderTypeByPalletTagId(epcId,orderDetailsList);
+            CURRENT_WORK_ORDER_STATUS = LoadingUnloadingActivityHelpers.getWorkOrderStatusByPalletTagId(epcId,orderDetailsList);
+            String destinationName = LoadingUnloadingActivityHelpers.getTagNameByOrderType(epcId,CURRENT_WORK_ORDER_TYPE,orderDetailsList);
+            Log.i("WorkOrderType1",CURRENT_WORK_ORDER_TYPE);
+            binding.textPalletNo.setText(palletName);
+            binding.textDestination.setText(destinationName);
 
-                    if (palletTag != null && !palletTag.equalsIgnoreCase("")) {
-                        Log.e("destid-UU",CURRENT_WORK_ORDER_TYPE);
-                        switch (CURRENT_WORK_ORDER_TYPE) {
+            IS_PALLET_TAG_SCANNED = true;
+            PalletTag = LoadingUnloadingActivityHelpers.getPalletTagByPalletTagId(epcId, orderDetailsList);
+        }
+        else {
+            if (IS_PALLET_TAG_SCANNED) {
+                isRfidReadingIsInProgress = true;
+                //check here type of workorder and then get corrosponding child tags.
+                // and check if current tag is corresponding to pallet tag then do action
+                if (PalletTag != null && !PalletTag.equalsIgnoreCase("")) {
+                    Log.e("destid-UU",CURRENT_WORK_ORDER_TYPE);
+                    switch (CURRENT_WORK_ORDER_TYPE) {
+                        case "":
+                            isRfidReadingIsInProgress = false;
+                            break;
 
-                            case "":
+                        case "U0":
+                            String u0LoadingAreaTagId = LoadingUnloadingActivityHelpers.getU0LoadingAreaTagIdForPallet(PalletTag, orderDetailsList);
+                            Log.e("destid-U0",u0LoadingAreaTagId);
+                            if (!epcId.equalsIgnoreCase(u0LoadingAreaTagId)) {
+                                //buzzerForWrongTag();
                                 isRfidReadingIsInProgress = false;
-                                break;
-                            case "U0":
-                                String u0LoadingAreaTagId = LoadingUnloadingActivityHelpers.getU0LoadingAreaTagIdForPallet(palletTag, orderDetailsList);
-                                Log.e("destid-U0",u0LoadingAreaTagId);
-                                if (!epcId.equalsIgnoreCase(u0LoadingAreaTagId)) {
-                                    //buzzerForWrongTag();
-                                    isRfidReadingIsInProgress = false;
-                                    AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
-                                    Log.e("STOPRFID", "AREA TAG NOT IN WORK ORDER U0:" + epcId);
-                                    // return;
-
-                                }
-                                //add tag into db and take action.
-                                addTagAndTakeAction(lst, "U0");
-
-
-                                break;
-                            case "U1":
-//                                String u1BinLocationTagId = LoadingUnloadingActivityHelpers.getU1BinTagIdForPallet(palletTag, orderDetailsList);
-//                                Log.e("destid-U1",u1BinLocationTagId);
-//                                if (!epcId.equalsIgnoreCase(u1BinLocationTagId)) {
-//                                    //buzzerForWrongTag();
-//                                    isRfidReadingIsInProgress = false;
-//                                    Log.e("STOPRFID", "BIN TAG NOT IN WORK ORDER U1:" + epcId);
-//
-//                                    AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
-//
-//                                }
-                                if(getTagType(epcId).equalsIgnoreCase(typeBean)){
-                                    addTagAndTakeAction(lst, "U1");
-                                } else{
-                                    isRfidReadingIsInProgress = false;
-                                    AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
-                                }
-                                break;
-                            case "L0":
-                                Log.e("destid-L0",epcId);
-                                if (getTagType(epcId).equalsIgnoreCase(typeTemporaryStorage)) {
-                                    addTagAndTakeAction(lst, "L0");
-                                }else{
-                                    isRfidReadingIsInProgress = false;
-                                    AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
-                                }
-                                break;
-                            case "L1":
-                                String l1LoadingAreaTagId = LoadingUnloadingActivityHelpers.getL1LoadingAreaTagIdForPallet(palletTag, orderDetailsList);
-                                Log.e("destid-L1",l1LoadingAreaTagId);
-                                if (!epcId.equalsIgnoreCase(l1LoadingAreaTagId)) {
-                                    //buzzerForWrongTag();
-                                    isRfidReadingIsInProgress = false;
-                                    Log.e("STOPRFID", "AREA TAG NOT IN WORK ORDER L1:" + epcId);
-
-                                    AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
+                                AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
+                                Log.e("STOPRFID", "AREA TAG NOT IN WORK ORDER U0:" + epcId);
+                                // return;
+                            } else {
+                                if (getTagType(epcId).equalsIgnoreCase(typeLoadingArea)) {
+                                    u0LoadingAreaTagId = epcId;
                                 }
 
-                                addTagAndTakeAction(lst, "L1");
-                                break;
-                        }
-                        isRfidReadingIsInProgress = false;
+                            }
+                            //add tag into db and take action.
+                            addTagAndTakeAction(PalletTag, "U0", u0LoadingAreaTagId);
+                            break;
+
+                        case "U1":
+                            Log.e("HereU1",CURRENT_WORK_ORDER_TYPE);
+                            if(getTagType(epcId).equalsIgnoreCase(typeBean)){
+                                DestinationTag = epcId;
+                                showCustomConfirmationDialog("Do you want to move the pallet in "+ db.getProductNameByProductTagId(epcId)+"?","SAVE");
+
+                            } else{
+                                Log.e("Here3", getTagType(epcId));
+                                isRfidReadingIsInProgress = false;
+                                AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
+                            }
+                            break;
+
+                        case "L0":
+                            Log.e("destid-L0",epcId);
+                            if (getTagType(epcId).equalsIgnoreCase(typeTemporaryStorage)) {
+                                DestinationTag = epcId;
+                                showCustomConfirmationDialog("Do you want to move the pallet in "+ db.getProductNameByProductTagId(epcId)+"?","SAVE");
+                            }else{
+                                isRfidReadingIsInProgress = false;
+                                AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
+                            }
+                            break;
+
+                        case "L1":
+                            String l1LoadingAreaTagId = LoadingUnloadingActivityHelpers.getL1LoadingAreaTagIdForPallet(PalletTag, orderDetailsList);
+                            Log.e("destid-L1",l1LoadingAreaTagId);
+                            if (!epcId.equalsIgnoreCase(l1LoadingAreaTagId)) {
+                                //buzzerForWrongTag();
+                                isRfidReadingIsInProgress = false;
+                                Log.e("STOPRFID", "AREA TAG NOT IN WORK ORDER L1:" + epcId);
+
+                                AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
+                            }else {
+                                if (getTagType(epcId).equalsIgnoreCase(typeLoadingArea)) {
+                                    l1LoadingAreaTagId = epcId;
+                                }
+
+                            }
+                            addTagAndTakeAction(PalletTag, "L1", l1LoadingAreaTagId);
+                            break;
+
+                        case "I0":
+                            if(getTagType(epcId).equalsIgnoreCase(typeBean)){
+                                DestinationTag = epcId;
+                                showCustomConfirmationDialog("Do you want to move the pallet in "+ db.getProductNameByProductTagId(epcId)+"?","SAVE");
+
+                            } else{
+                                isRfidReadingIsInProgress = false;
+                                AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
+                            }
+                            break;
                     }
-                }else{
-                    AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
+                    isRfidReadingIsInProgress = false;
                 }
+                binding.textScannedDestination.setText(db.getProductNameByProductTagId(epcId));
             }
-            isRfidReadingIsInProgress = false;
-
-        }
-    }
-    private void addTagAndTakeAction(List<TagBean> lst, String workOrderType) {
-        db.storeTagMaster(lst);
-        Log.e("action",""+lst.get(0).getEpcId());
-
-        List<TagBean> allTags = db.getAllTagData();
-        List<WorkOrderUploadTagBean> allTagsOffline1 = new ArrayList<>();
-        String batchId = APIConstants.getSystemDateTimeForBatchId();
-        for (int i = 0; i < allTags.size(); i++) {
-            TagBean bean1 = allTags.get(i);
-            bean1.setBatchId(batchId);
-
-            String workOrderNumber = CURRENT_WORK_ORDER_NUMBER;
-            workOrderType = CURRENT_WORK_ORDER_TYPE;
-            WorkOrderUploadTagBean workOrderUploadTagBean = new WorkOrderUploadTagBean(bean1, workOrderNumber, workOrderType);
-            Log.e("WokrUpload", workOrderUploadTagBean.getWorkOrderNumber());
-            allTagsOffline1.add(workOrderUploadTagBean);
-        }
-        db.storeOfflineTagMaster(allTagsOffline1);
-
-        Log.e("LocalDb", db.getAllPalletTags().toString());
-        List<WorkOrderListItem> updatedAll = LoadingUnloadingActivityHelpers.getUpdatedTotalOrders(orderDetailsList, db.getPalletTag().getEpcId(), "Completed");
-        List<WorkOrderListItem> updatedDis = LoadingUnloadingActivityHelpers.getUpdatedDisOrders(disOrderDetailsList, db.getPalletTag().getEpcId(), "Completed");
-        List<WorkOrderListItem> updatedrec = LoadingUnloadingActivityHelpers.getUpdatedRecOrders(recOrderDetailsList, db.getPalletTag().getEpcId(), "Completed");
-
-        db.deleteTagMaster();//changed
-        if(orderDetailsList!=null){
-            orderDetailsList.clear();
-            orderDetailsList.addAll(updatedAll);
-            Log.e("thisorderstatus","CompletedALL"+updatedAll.size());
-        }
-        if(workOrderType.equalsIgnoreCase("L0") || workOrderType.equalsIgnoreCase("L1")){
-            if(disOrderDetailsList!=null){
-                disOrderDetailsList.clear();
-                binding.disCount.setText(""+disOrderDetailsList.size());
-                disOrderDetailsList.addAll(updatedDis);
-                Log.e("thisorderstatus","CompletedDIS"+updatedDis.size());
+            else{
+                AssetUtils.showCommonBottomSheetErrorDialog(context, "Please scan the Pallet Tag");
             }
-            workOrderDetailsDisAdapter.notifyDataSetChanged();
+
         }
-
-        if(workOrderType.equalsIgnoreCase("U0") || workOrderType.equalsIgnoreCase("U1")){
-            if(recOrderDetailsList!=null){
-                recOrderDetailsList.clear();
-                binding.recCount.setText(""+recOrderDetailsList.size());
-                recOrderDetailsList.addAll(updatedrec);
-                Log.e("thisorderstatus","CompletedREC"+updatedrec.size());
-            }
-            workOrderDetailsRecAdapter.notifyDataSetChanged();
-        }
-
-
-        Log.e("thisorderstatus","Completed");
-
-        binding.textPalletNo.setText("");
-        binding.textDestination.setText("");
-
-        CURRENT_WORK_ORDER_STATUS = "";
-        CURRENT_WORK_ORDER_TYPE = "";
-        CURRENT_WORK_ORDER_NUMBER = "";
         isRfidReadingIsInProgress = false;
-//        if (db.getOfflineTagMasterCount() > 0) {
-//            new Thread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    isRfidReadingIsInProgress = true;
-//                    uploadWorkOrderItemToServer();
-//                }
-//            }).start();
-//        }
     }
+}
+
+private void addTagAndTakeAction(String palletTag, String workOrderType, String destinationId) {
+Log.e("PallET1", palletTag);
+Log.e("typeWO", workOrderType);
+Log.e("desti",destinationId);
+String batchID = UUID.randomUUID().toString();
+String dateTime = AssetUtils.getSystemDateTimeInFormatt();
+    TagWithDestination tagWithDestination = new TagWithDestination(batchID,CURRENT_WORK_ORDER_NUMBER, palletTag, destinationId,  workOrderType, dateTime);
+    db.storeOfflineTagWithDestination(tagWithDestination);
+Log.e("DBTAG", tagWithDestination.getWorkOrderNo());
+Log.e("DBTAG", tagWithDestination.getDestinationTag());
+    List<WorkOrderListItem> updatedAll = LoadingUnloadingActivityHelpers.getUpdatedTotalOrders(orderDetailsList, palletTag, "Completed");
+    List<WorkOrderListItem> updatedDis = LoadingUnloadingActivityHelpers.getUpdatedDisOrders(disOrderDetailsList, palletTag, "Completed");
+    List<WorkOrderListItem> updatedrec = LoadingUnloadingActivityHelpers.getUpdatedRecOrders(recOrderDetailsList, palletTag, "Completed");
+
+    if(orderDetailsList!=null){
+        orderDetailsList.clear();
+        orderDetailsList.addAll(updatedAll);
+        Log.e("thisorderstatus","CompletedALL"+updatedAll.size());
+    }
+    if(workOrderType.equalsIgnoreCase("L0") || workOrderType.equalsIgnoreCase("L1")){
+        if(disOrderDetailsList!=null){
+            disOrderDetailsList.clear();
+            binding.disCount.setText(""+disOrderDetailsList.size());
+            disOrderDetailsList.addAll(updatedDis);
+            Log.e("thisorderstatus","CompletedDIS"+updatedDis.size());
+        }
+        workOrderDetailsDisAdapter.notifyDataSetChanged();
+    }
+
+    if(workOrderType.equalsIgnoreCase("U0") || workOrderType.equalsIgnoreCase("U1")||workOrderType.equalsIgnoreCase("I0")){
+        if(recOrderDetailsList!=null){
+            recOrderDetailsList.clear();
+            binding.recCount.setText(""+recOrderDetailsList.size());
+            recOrderDetailsList.addAll(updatedrec);
+            Log.e("thisorderstatus","CompletedREC"+updatedrec.size());
+        }
+        workOrderDetailsRecAdapter.notifyDataSetChanged();
+    }
+
+    binding.textPalletNo.setText("");
+    binding.textDestination.setText("");
+    binding.textScannedDestination.setText("");
+    PalletTag = "";
+    DestinationTag = "";
+
+    CURRENT_WORK_ORDER_STATUS = "";
+    CURRENT_WORK_ORDER_TYPE = "";
+    CURRENT_WORK_ORDER_NUMBER = "";
+    isRfidReadingIsInProgress = false;
+    IS_PALLET_TAG_SCANNED = false;
+}
 
 
     boolean isOtherWorkIsInProgress = false;
@@ -685,19 +646,14 @@ public class PalletMovementActivity extends AppCompatActivity {
                                                 String destinationName = "";
 
                                                 if (dataObject.has(APIConstants.CURRENT_WORK_ORDER_STATUS)) {
-                                                    Log.e("result 3.1", "get work order status");
                                                     workorderStatus = dataObject.getString(APIConstants.CURRENT_WORK_ORDER_STATUS);
                                                     workOrderListItem.setWorkorderStatus(workorderStatus);
-                                                    Log.e("result 3.2", "get work order status");
                                                     // if (workorderStatus!=null && !workorderStatus.equalsIgnoreCase(CURRENT_WORK_ORDER_STATUS)) {
                                                     if (workorderStatus != null) {
                                                         CURRENT_WORK_ORDER_STATUS = workorderStatus;
-                                                        Log.e("WorkorderStatus1", workorderStatus);
                                                     } else {
-                                                        Log.e("result6", "workorderstatus is null");
                                                     }
                                                 } else {
-                                                    Log.e("result4", "not found work order statuds");
                                                 }
                                                 if (dataObject.has(APIConstants.DESTINATION_LOCATION_NAME)) {
 
@@ -765,8 +721,7 @@ public class PalletMovementActivity extends AppCompatActivity {
                                                     listItemStatus = dataObject.getString(APIConstants.CURRENT_WORK_ORDER_LIST_ITEM_STATUS);
                                                     workOrderListItem.setListItemStatus(listItemStatus);
                                                 }
-                                                Log.e("LocalDb1", db.getAllPalletTags().toString());
-                                                Log.e("LastPallet", LAST_SUCCEED_PALLET);
+
                                                 if(palletTagId.equalsIgnoreCase(LAST_SUCCEED_PALLET)||db.isEpcPresentInOffline(palletTagId)) {
                                                     continue;
                                                 }
@@ -774,17 +729,13 @@ public class PalletMovementActivity extends AppCompatActivity {
                                                     orderDetailsList.add(workOrderListItem);
                                                     LAST_SUCCEED_PALLET = "";
                                                 }
-
-                                                Log.e("TYPE",workorderType);
-                                                if (workorderType.equalsIgnoreCase("U0") || workorderType.equalsIgnoreCase("U1")) {
-                                                    Log.e("TYPE-U",workorderType);
+                                                if (workorderType.equalsIgnoreCase("U0") || workorderType.equalsIgnoreCase("U1")||workorderType.equalsIgnoreCase("I0")) {
                                                     if(!palletTagId.equalsIgnoreCase(LAST_SUCCEED_PALLET)||!db.isEpcPresentInOffline(palletTagId)) {
                                                         recOrderDetailsList.add(workOrderListItem);
                                                         LAST_SUCCEED_PALLET = "";
                                                     }
 
                                                 } else if (workorderType.equalsIgnoreCase("L0") || workorderType.equalsIgnoreCase("L1")) {
-                                                    Log.e("TYPE-L",workorderType);
                                                     if(!palletTagId.equalsIgnoreCase(LAST_SUCCEED_PALLET)||!db.isEpcPresentInOffline(palletTagId)) {
                                                        disOrderDetailsList.add(workOrderListItem);
                                                         LAST_SUCCEED_PALLET = "";
@@ -798,13 +749,11 @@ public class PalletMovementActivity extends AppCompatActivity {
                                             if (workOrderDetailsDisAdapter != null) {
                                                 workOrderDetailsDisAdapter.notifyDataSetChanged();
                                             }
-                                            Log.e("TOTALLIST",""+orderDetailsList.size());
-                                            Log.e("DISLIST",""+disOrderDetailsList.size());
-                                            Log.e("RECLIST",""+recOrderDetailsList.size());
+
                                             binding.recCount.setText(String.valueOf(recOrderDetailsList.size()));
                                             binding.disCount.setText(String.valueOf(disOrderDetailsList.size()));
                                         } else {
-                                            Log.e("result7", "no data array");
+
                                         }
                                     }
                                     workOrderDetailsRecAdapter.notifyDataSetChanged();
@@ -847,66 +796,64 @@ public class PalletMovementActivity extends AppCompatActivity {
 
     private void uploadWorkOrderItemToServer() {
         try {
-            String topBatchId = db.getTopBatchId();
-            if (topBatchId == null) {
-                isRfidReadingIsInProgress = false;
-                isOtherWorkIsInProgress = false;
-                return;
-            }
-            WorkOrderUploadTagBean bean = db.getPalletTagForBatchId(topBatchId);
-            Log.e("BEFORE4", topBatchId);
-            if (bean == null) {
-                db.deleteOfflineTagMasterForBatch(topBatchId);
-                Log.e("INWORK", "4");
-                isRfidReadingIsInProgress = false;
-                isOtherWorkIsInProgress = false;
-                return;
-            }
-            String palletTagId = bean.getEpcId();
-            String workOrderNumber = bean.getWorkOrderNumber();
-            String workOrderType = bean.getWorkOrderType();
-            String listItemStatus = "Completed";
-            String palletTagRssi = "" + bean.getRssi();
-            String palletTagCount = "1";
-            String TransID = UUID.randomUUID().toString();
-            Log.e("COUNT", palletTagCount);
-            String palletTagAntenaId = "" + bean.getAntenna();
-            // String date_time = AssetUtils.getUTCSystemDateTimeInFormatt();
-            String date_time = "" + bean.getAddedDateTime();
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put(APIConstants.DEVICE_ID, SharedPreferencesManager.getDeviceId(context));
-            jsonObject.put(APIConstants.TRANS_ID, TransID);
-            jsonObject.put(APIConstants.CURRENT_WORK_ORDER_NUMBER, workOrderNumber);
-            jsonObject.put(APIConstants.CURRENT_WORK_ORDER_LIST_ITEM_STATUS, listItemStatus);
-            jsonObject.put(APIConstants.CURRENT_WORK_ORDER_TYPE, workOrderType);
-            jsonObject.put(APIConstants.RSSI, palletTagRssi);
-            jsonObject.put(APIConstants.TRANSACTION_DATE_TIME, date_time);
-            jsonObject.put(APIConstants.COUNT, palletTagCount);
-            jsonObject.put(APIConstants.PALLET_TAG_ID, palletTagId);
-            jsonObject.put(APIConstants.ANTENA_ID, palletTagAntenaId);
-            jsonObject.put(APIConstants.SUB_TAG_CATEGORY_ID, getCategoryID(palletTagId));
+          String batchID = db.getTopBatch();
+            TagWithDestination bean = db.getTagWithDestinationByPalletTagId(batchID);
 
-            jsonObject.put(APIConstants.TOUCH_POINT_TYPE, "T");
-            JSONArray tagDetailsArray = new JSONArray();
-            List<WorkOrderUploadTagBean> allTags = db.getAllTagDataForBatch(topBatchId);
-            for (int i = 0; i < allTags.size(); i++) {
-                JSONObject obj = new JSONObject();
-                WorkOrderUploadTagBean tagBean = allTags.get(i);
-                //obj.put(APIConstants.SUB_TRANS_ID,TransID);
-                obj.put(APIConstants.SUB_TAG_ID, tagBean.getEpcId());
-                obj.put(APIConstants.COUNT, "0");
-                obj.put(APIConstants.RSSI, "" + tagBean.getRssi());
-                obj.put(APIConstants.SUB_TAG_CATEGORY_ID, getCategoryID(tagBean.getEpcId()));
-                obj.put(APIConstants.SUB_TAG_TYPE, "" + tagBean.getTagType());
-                obj.put(APIConstants.TRANSACTION_DATE_TIME, "" + tagBean.getAddedDateTime());
-                if (!tagBean.getTagType().equalsIgnoreCase(typePallet)) {
-                    tagDetailsArray.put(obj);
+            if (bean == null) {
+                isRfidReadingIsInProgress = false;
+                isOtherWorkIsInProgress = false;
+                return;
+            } else{
+                String palletTagId = bean.getPalletTag();
+                String workOrderNumber = bean.getWorkOrderNo();
+                String workOrderType = bean.getWorkOrderType();
+                Log.e("TAGWITHDEST1", bean.getWorkOrderNo());
+                Log.e("TAGWITHDEST2", bean.getDestinationTag());
+                String listItemStatus = "Completed";
+                String palletTagRssi = "" + 65;
+                String palletTagCount = "1";
+                String TransID = bean.getBatchID();
+                Log.e("UniqueID", TransID);
+                Log.e("COUNT", palletTagCount);
+                String palletTagAntenaId = "" + 1;
+                String date_time = AssetUtils.getUTCSystemDateTimeInFormatt();
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put(APIConstants.DEVICE_ID, SharedPreferencesManager.getDeviceId(context));
+                jsonObject.put(APIConstants.TRANS_ID, TransID);
+                jsonObject.put(APIConstants.CURRENT_WORK_ORDER_NUMBER, workOrderNumber);
+                jsonObject.put(APIConstants.CURRENT_WORK_ORDER_LIST_ITEM_STATUS, listItemStatus);
+                jsonObject.put(APIConstants.CURRENT_WORK_ORDER_TYPE, workOrderType);
+                jsonObject.put(APIConstants.RSSI, palletTagRssi);
+                jsonObject.put(APIConstants.TRANSACTION_DATE_TIME, date_time);
+                jsonObject.put(APIConstants.COUNT, palletTagCount);
+                jsonObject.put(APIConstants.PALLET_TAG_ID, palletTagId);
+                jsonObject.put(APIConstants.ANTENA_ID, palletTagAntenaId);
+                jsonObject.put(APIConstants.SUB_TAG_CATEGORY_ID, getCategoryID(palletTagId));
+                jsonObject.put(APIConstants.TOUCH_POINT_TYPE, "T");
+
+                JSONArray tagDetailsArray = new JSONArray();
+
+                List<TagWithDestination> allTags = db.getAllTagWithDestinationDataForPallet(batchID);
+                for (int i = 0; i < allTags.size(); i++) {
+                    JSONObject obj = new JSONObject();
+                    TagWithDestination tagBean = allTags.get(i);
+                    //obj.put(APIConstants.SUB_TRANS_ID,TransID);
+                    obj.put(APIConstants.SUB_TAG_ID, tagBean.getDestinationTag());
+                    Log.e("DestiTag", tagBean.getDestinationTag());
+                    obj.put(APIConstants.COUNT, "1");
+                    obj.put(APIConstants.RSSI, "" + 65);
+                    obj.put(APIConstants.SUB_TAG_CATEGORY_ID,  getCategoryID(tagBean.getDestinationTag()));
+                    obj.put(APIConstants.SUB_TAG_TYPE, "" + 3);
+                    obj.put(APIConstants.TRANSACTION_DATE_TIME, date_time);
+                    if (!getTagType(tagBean.getDestinationTag()).equalsIgnoreCase(typePallet)) {
+                        tagDetailsArray.put(obj);
+                    }
                 }
+                jsonObject.put(APIConstants.SUB_TAG_DETAILS, tagDetailsArray);
+                //jsonObject.put(APIConstants.K_ASSET_SERIAL_NUMBER,serialnumber);
+                Log.e("OFFLINEDATA", jsonObject.toString());
+                postInventoryData(batchID, jsonObject);
             }
-            jsonObject.put(APIConstants.SUB_TAG_DETAILS, tagDetailsArray);
-            //jsonObject.put(APIConstants.K_ASSET_SERIAL_NUMBER,serialnumber);
-            Log.e("OFFLINEDATA", jsonObject.toString());
-            postInventoryData(topBatchId, jsonObject);
         } catch (JSONException e) {
             isRfidReadingIsInProgress = false;
             isOtherWorkIsInProgress = false;
@@ -914,7 +861,7 @@ public class PalletMovementActivity extends AppCompatActivity {
         }
     }
 
-    public void postInventoryData(String batchId, final JSONObject loginRequestObject) {
+    public void postInventoryData(String batchID, final JSONObject loginRequestObject) {
         OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
                 .connectTimeout(APIConstants.API_TIMEOUT, TimeUnit.SECONDS)
                 .readTimeout(APIConstants.API_TIMEOUT, TimeUnit.SECONDS)
@@ -936,9 +883,9 @@ public class PalletMovementActivity extends AppCompatActivity {
                         try {
                             if (result.getString("status").equalsIgnoreCase("true")) {
 
-                                db.deleteOfflineTagMasterForBatch(batchId);
+                                db.deleteOfflineTagWithDestinationTableForBatch(batchID);
 
-                                LAST_SUCCEED_PALLET = loginRequestObject.getString(APIConstants.CURRENT_PALLET_TAG_ID);
+                                LAST_SUCCEED_PALLET = loginRequestObject.getString(APIConstants.PALLET_TAG_ID);
                                 Log.e("LastPallet1", LAST_SUCCEED_PALLET);
 
                               /*  List<WorkOrderListItem> updatedAll = LoadingUnloadingActivityHelpers.getUpdatedTotalOrders(orderDetailsList, batchId, "Completed");
@@ -983,11 +930,10 @@ public class PalletMovementActivity extends AppCompatActivity {
                                         iterator2.remove();
                                     }
                                 }
-                                  List<WorkOrderListItem> updatedAll = LoadingUnloadingActivityHelpers.getUpdatedTotalOrders(orderDetailsList, batchId, "Completed");
-                                List<WorkOrderListItem> updatedDis = LoadingUnloadingActivityHelpers.getUpdatedTotalOrders(disOrderDetailsList,batchId, "Completed");
-                                List<WorkOrderListItem> updatedrec = LoadingUnloadingActivityHelpers.getUpdatedTotalOrders(recOrderDetailsList, batchId, "Completed");
+                                  List<WorkOrderListItem> updatedAll = LoadingUnloadingActivityHelpers.getUpdatedTotalOrders(orderDetailsList, PalletTag, "Completed");
+                                List<WorkOrderListItem> updatedDis = LoadingUnloadingActivityHelpers.getUpdatedTotalOrders(disOrderDetailsList, PalletTag, "Completed");
+                                List<WorkOrderListItem> updatedrec = LoadingUnloadingActivityHelpers.getUpdatedTotalOrders(recOrderDetailsList, PalletTag, "Completed");
 
-                                db.deleteTagMaster();
                                 if(orderDetailsList!=null){
                                     orderDetailsList.clear();
                                     orderDetailsList.addAll(updatedAll);
@@ -1063,10 +1009,16 @@ public class PalletMovementActivity extends AppCompatActivity {
                 if (action.equals("CLEAR")) {
                     binding.textPalletNo.setText("");
                     binding.textDestination.setText("");
+                    binding.textScannedDestination.setText("");
+                    PalletTag = "";
+                    DestinationTag = "";
                     //db.deleteOfflineTagMaster();
                 }
                 else if (action.equals("BACK")) {
                     finish();
+                } else if (action.equals("SAVE")) {
+                        Log.e("Here2", getTagType(DestinationTag));
+                        addTagAndTakeAction(PalletTag, CURRENT_WORK_ORDER_TYPE, DestinationTag);
                 }
             }
         });

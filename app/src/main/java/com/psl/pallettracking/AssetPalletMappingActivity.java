@@ -123,7 +123,7 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
         mediaPlayer = MediaPlayer.create(context, R.raw.beep);
         mediaPlayerErr = MediaPlayer.create(context,R.raw.error);
 
-        SharedPreferencesManager.setPower(context, 20);
+        SharedPreferencesManager.setPower(context, 10);
 
         binding.btnUpload.setOnClickListener(new View.OnClickListener() {
             @Override

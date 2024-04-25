@@ -19,13 +19,14 @@
         android:roundIcon="@mipmap/logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.SEUICAsset">
+
         <activity
             android:name=".ItemMovementActivity"
-            android:screenOrientation="portrait"
-            android:exported="false">
-        <meta-data
-            android:name="android.app.lib_name"
-            android:value="" />
+            android:exported="false"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
         </activity>
         <activity
             android:name=".PalletMovementActivity"
