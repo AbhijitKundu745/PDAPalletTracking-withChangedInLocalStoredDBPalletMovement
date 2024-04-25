@@ -3,7 +3,6 @@ package com.psl.pallettracking.database;
 
 import static com.psl.pallettracking.ext.DataExt.typePallet;
 
-import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -19,11 +18,9 @@ import com.psl.pallettracking.bean.TagWithDestination;
 import com.psl.pallettracking.helper.AppConstants;
 import com.psl.pallettracking.bean.TagBean;
 import com.psl.pallettracking.bean.WorkOrderUploadTagBean;
-import com.psl.pallettracking.helper.AssetUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class DatabaseHandler extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 16;
