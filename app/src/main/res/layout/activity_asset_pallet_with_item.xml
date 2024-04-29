@@ -36,7 +36,6 @@
                     android:orientation="vertical"
                     android:layout_weight="1"
                     android:padding="1dp"
-                    android:layout_marginTop="10dp"
                     android:layout_height="wrap_content">
                     <TextView
                         android:layout_width="match_parent"
@@ -61,7 +60,6 @@
                     android:orientation="vertical"
                     android:layout_weight="1"
                     android:padding="1dp"
-                    android:layout_marginTop="10dp"
                     android:layout_height="wrap_content"
                     android:paddingLeft="5dp">
                     <TextView
@@ -83,6 +81,26 @@
                         android:paddingLeft="5dp"/>
                 </androidx.appcompat.widget.LinearLayoutCompat>
             </androidx.appcompat.widget.LinearLayoutCompat>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:text="DC No:"
+                android:paddingLeft="5dp"
+                android:background="@drawable/edittext_grey_background"/>
+            <TextView
+                android:id="@+id/DRN"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:textColor="@color/orange1"
+                android:textSize="18sp"
+                android:paddingLeft="5dp"
+                android:background="@drawable/edittext_grey_background"/>
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
                 android:orientation="horizontal"
@@ -177,7 +195,7 @@
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:background="@drawable/round_button_green"
-                    android:layout_height="45dp"/>
+                    android:layout_height="30dp"/>
 
             </androidx.appcompat.widget.LinearLayoutCompat>
             <LinearLayout

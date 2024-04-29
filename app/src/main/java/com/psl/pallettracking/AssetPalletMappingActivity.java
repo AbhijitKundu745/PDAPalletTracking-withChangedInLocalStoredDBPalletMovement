@@ -118,6 +118,8 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
         binding.TruckNumber.setSelected(true);
         binding.LocationName.setText(SharedPreferencesManager.getLocationName(context));
         binding.LocationName.setSelected(true);
+        binding.DRN.setText(SharedPreferencesManager.getDRN(context));
+        binding.DRN.setSelected(true);
 
         setDefault();
         mediaPlayer = MediaPlayer.create(context, R.raw.beep);
@@ -691,6 +693,7 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
                     jsonobject.put(APIConstants.K_PARENT_ASSET_TYPE, "Pallet");
                     jsonobject.put(APIConstants.K_TRUCK_NUMBER, SharedPreferencesManager.getTruckNumber(context));
                     jsonobject.put(APIConstants.K_PROCESS_TYPE, SharedPreferencesManager.getProcessType(context));
+                    jsonobject.put(APIConstants.K_DRN, SharedPreferencesManager.getDRN(context));
                     //jsonobject.put(APIConstants.K_PALLET_ID, CURRENT_EPC);
                     JSONArray js = new JSONArray();
                     for (int i = 0; i < barcodeList.size(); i++) {

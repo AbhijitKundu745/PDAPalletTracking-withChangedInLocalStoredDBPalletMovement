@@ -118,6 +118,8 @@ public class AssetPalletWithItemActivity extends AppCompatActivity {
         binding.TruckNumber.setSelected(true);
         binding.LocationName.setText(SharedPreferencesManager.getLocationName(context));
         binding.LocationName.setSelected(true);
+        binding.DRN.setText(SharedPreferencesManager.getDRN(context));
+        binding.DRN.setSelected(true);
 
 
         activity_type = db.getMenuActivityNameByMenuID(menu_id);
@@ -783,6 +785,7 @@ public class AssetPalletWithItemActivity extends AppCompatActivity {
                     jsonobject.put(APIConstants.K_PARENT_ASSET_TYPE, "Pallet");
                     jsonobject.put(APIConstants.K_TRUCK_NUMBER, SharedPreferencesManager.getTruckNumber(context));
                     jsonobject.put(APIConstants.K_PROCESS_TYPE, SharedPreferencesManager.getProcessType(context));
+                    jsonobject.put(APIConstants.K_DRN, SharedPreferencesManager.getDRN(context));
                     //jsonobject.put(APIConstants.K_PALLET_ID, CURRENT_EPC);
                     JSONArray js = new JSONArray();
                     for (int i = 0; i < barcodeList.size(); i++) {
@@ -851,6 +854,7 @@ public class AssetPalletWithItemActivity extends AppCompatActivity {
             jsonobject = new JSONObject();
 
             jsonobject.put(APIConstants.K_TRUCK_NUMBER, SharedPreferencesManager.getTruckNumber(context));
+            jsonobject.put(APIConstants.K_DRN, SharedPreferencesManager.getDRN(context));
 
             runOnUiThread(new Runnable() {
                 @Override

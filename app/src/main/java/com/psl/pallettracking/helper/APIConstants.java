@@ -58,6 +58,7 @@ public class APIConstants {
     public static final String K_PARENT_ASSET_TYPE = "ParentAssetType";
     public static final String K_TRUCK_NUMBER = "TruckNumber";
     public static final String K_PROCESS_TYPE = "ProcessType";
+    public static final String K_DRN = "DRN";
     public static final String K_TRUCK_TAG_ID = "TruckTagID";
     public static final String K_Qty = "Qty";
     public static final String K_COMPANY_CODE = "CompanyCode";

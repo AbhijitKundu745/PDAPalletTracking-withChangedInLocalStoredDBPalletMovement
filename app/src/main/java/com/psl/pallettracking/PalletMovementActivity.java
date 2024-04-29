@@ -60,7 +60,6 @@ public class PalletMovementActivity extends AppCompatActivity {
     ActivityPalletMovementBinding binding;
     private Context context = this;
 
-
     private WorkOrderDetailsAdapter workOrderDetailsRecAdapter, workOrderDetailsDisAdapter;
     private List<WorkOrderListItem> orderDetailsList, recOrderDetailsList, disOrderDetailsList;
     private String workOrderType = "";

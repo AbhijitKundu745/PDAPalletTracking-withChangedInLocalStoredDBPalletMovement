@@ -3,35 +3,39 @@ package com.psl.pallettracking;
 import static com.psl.pallettracking.helper.AssetUtils.hideProgressDialog;
 import static com.psl.pallettracking.helper.AssetUtils.showProgress;
 
-import android.content.Context;
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
-import android.view.View;
-
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
+
+import android.app.Dialog;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.ListView;
 
 import com.androidnetworking.AndroidNetworking;
 import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
+import com.psl.pallettracking.adapters.SearchableAdapter;
 import com.psl.pallettracking.databinding.ActivityTruckMappingBinding;
+import com.psl.pallettracking.databinding.ActivityTruckMappingForDispatchBinding;
 import com.psl.pallettracking.helper.APIConstants;
 import com.psl.pallettracking.helper.AssetUtils;
 import com.psl.pallettracking.helper.ConnectionDetector;
 import com.psl.pallettracking.helper.SharedPreferencesManager;
 import com.psl.pallettracking.rfid.RFIDInterface;
 import com.psl.pallettracking.rfid.SeuicGlobalRfidHandler;
-import com.seuic.scanner.ScannerFactory;
-import com.seuic.scanner.ScannerKey;
 import com.seuic.uhf.EPC;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -42,28 +46,31 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 
-public class TruckMappingActivity extends AppCompatActivity {
+public class TruckMappingForDispatchActivity extends AppCompatActivity {
     private Context context = this;
     private SeuicGlobalRfidHandler rfidHandler;
     private ConnectionDetector cd;
-    private ActivityTruckMappingBinding binding;
+    private ActivityTruckMappingForDispatchBinding binding;
     boolean IS_SCANNING_LOCKED = false;
     private boolean allow_trigger_to_press = true;
     boolean IS_TRUCK_TAG_SCANNED = false;
-
+    private String SELECTED_ITEM = "";
+    private String default_source_item = "Select DC No";
     String CURRENT_EPC = "";
     String TRUCK_TAG_ID = "";
     HashMap<String, String> hashMap = new HashMap<>();
     public ArrayList<HashMap<String, String>> tagList = new ArrayList<HashMap<String, String>>();
-
+    Dialog dialog;
+    SearchableAdapter searchableAdapter;
+    ArrayList<String> DRNList = new ArrayList<>();
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("TruckMappingActivity", "onCreate called");
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_truck_mapping);
+        //setContentView(R.layout.activity_truck_mapping_for_dispatch);
+        Log.d("TruckMappingForDispatchActivity", "onCreate called");
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_truck_mapping_for_dispatch);
         getSupportActionBar().hide();
         cd = new ConnectionDetector(context);
-
         binding.btnTruckRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -73,7 +80,7 @@ public class TruckMappingActivity extends AppCompatActivity {
                         @Override
                         public void run() {
 
-                            Intent AssetPalletMappingIntent = new Intent(TruckMappingActivity.this, AssetPalletMappingActivity.class);
+                            Intent AssetPalletMappingIntent = new Intent(TruckMappingForDispatchActivity.this, AssetPalletMappingActivity.class);
                             //AssetPalletMappingIntent.putExtra("TruckNumber", SharedPreferencesManager.getTruckNumber(context));
                             //AssetPalletMappingIntent.putExtra("LocationName", SharedPreferencesManager.getLocationName(context));
 
@@ -83,18 +90,6 @@ public class TruckMappingActivity extends AppCompatActivity {
                 } else{
                     AssetUtils.showCommonBottomSheetErrorDialog(context, "Please scan truck tag");
                 }
-//                new Handler().postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//
-//                        Intent AssetPalletMappingIntent = new Intent(TruckMappingActivity.this, AssetPalletMappingActivity.class);
-//                        //AssetPalletMappingIntent.putExtra("TruckNumber", SharedPreferencesManager.getTruckNumber(context));
-//                        //AssetPalletMappingIntent.putExtra("LocationName", SharedPreferencesManager.getLocationName(context));
-//
-//                        startActivity(AssetPalletMappingIntent);
-//                    }
-//                }, 1000);
-                //hideProgressDialog();
             }
         });
         binding.btnTruckRegisterWithoutQr.setOnClickListener(new View.OnClickListener() {
@@ -107,7 +102,7 @@ public class TruckMappingActivity extends AppCompatActivity {
                         @Override
                         public void run() {
 
-                            Intent AssetPalletMappingIntent = new Intent(TruckMappingActivity.this, AssetPalletWithItemActivity.class);
+                            Intent AssetPalletMappingIntent = new Intent(TruckMappingForDispatchActivity.this, AssetPalletWithItemActivity.class);
                             //AssetPalletMappingIntent.putExtra("TruckNumber", SharedPreferencesManager.getTruckNumber(context));
                             //AssetPalletMappingIntent.putExtra("LocationName", SharedPreferencesManager.getLocationName(context));
 
@@ -203,6 +198,74 @@ public class TruckMappingActivity extends AppCompatActivity {
                 });
             }
         });
+
+        binding.searchableTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Initialize dialog
+                dialog = new Dialog(TruckMappingForDispatchActivity.this);
+
+                // set custom dialog
+                dialog.setContentView(R.layout.dialog_searchable_spinner);
+
+                // set custom height and width
+                dialog.getWindow().setLayout(650, 800);
+
+                // set transparent background
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+                // show dialog
+                dialog.show();
+
+                // Initialize and assign variable
+                EditText editText = dialog.findViewById(R.id.edit_text);
+                ListView listView = dialog.findViewById(R.id.list_view);
+
+                // Initialize array adapter
+                searchableAdapter = new SearchableAdapter(TruckMappingForDispatchActivity.this, DRNList);
+
+                // set adapter
+                listView.setAdapter(searchableAdapter);
+                editText.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        searchableAdapter.getFilter().filter(s);
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+
+                    }
+                });
+
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        if(IS_TRUCK_TAG_SCANNED) {
+                            // when item selected from list
+                            // set selected item on textView
+                            // Dismiss dialog
+                            dialog.dismiss();
+                            SELECTED_ITEM = (String) searchableAdapter.getItem(position);
+                            binding.searchableTextView.setText(SELECTED_ITEM);
+                            if (SELECTED_ITEM.equalsIgnoreCase(default_source_item) || SELECTED_ITEM.equalsIgnoreCase("")) {
+                                SELECTED_ITEM = "";
+
+                            } else {
+                                SharedPreferencesManager.setDRN(context, SELECTED_ITEM);
+                            }
+                        } else{
+                            AssetUtils.showCommonBottomSheetErrorDialog(context, "Please scan truck tag");
+                        }
+                    }
+                });
+            }
+        });
     }
 
     private String SCANNED_EPC = "";
@@ -215,19 +278,19 @@ public class TruckMappingActivity extends AppCompatActivity {
             try {
                 if (SCANNED_EPC != null) {
                     if (!SCANNED_EPC.isEmpty()) {
-                            CURRENT_EPC = SCANNED_EPC;
-                            SCANNED_EPC = "";
-                            Log.e("EPC", CURRENT_EPC);
-                            CURRENT_EPC = CURRENT_EPC.substring(0, 24);
-                            String companycode = CURRENT_EPC.substring(0, 2);
-                            companycode = AssetUtils.hexToNumber(companycode);
-                            String assettpid = CURRENT_EPC.substring(2, 4);
-                            String serialnumber = CURRENT_EPC.substring(4, 12);
-                                TRUCK_TAG_ID = CURRENT_EPC;
-                                binding.edtTruckID.setText(TRUCK_TAG_ID);
-                                //binding.edtTruckID.setText(SharedPreferencesManager.getTruckNumber(context));
+                        CURRENT_EPC = SCANNED_EPC;
+                        SCANNED_EPC = "";
+                        Log.e("EPC", CURRENT_EPC);
+                        CURRENT_EPC = CURRENT_EPC.substring(0, 24);
+                        String companycode = CURRENT_EPC.substring(0, 2);
+                        companycode = AssetUtils.hexToNumber(companycode);
+                        String assettpid = CURRENT_EPC.substring(2, 4);
+                        String serialnumber = CURRENT_EPC.substring(4, 12);
+                        TRUCK_TAG_ID = CURRENT_EPC;
+                        binding.edtTruckID.setText(TRUCK_TAG_ID);
+                        //binding.edtTruckID.setText(SharedPreferencesManager.getTruckNumber(context));
                         IS_TRUCK_TAG_SCANNED = true;
-                                getTruckDetails();
+                        getTruckDetails();
                     }
                 }
             } catch (Exception e) {
@@ -329,9 +392,15 @@ public class TruckMappingActivity extends AppCompatActivity {
                 }
                 if (responseObject.has("DRN")) {
                     DRN = responseObject.getString("DRN");
-                    binding.textDRN.setText(DRN);
-                    binding.textDRN.setSelected(true);
-                    SharedPreferencesManager.setDRN(context, DRN);
+                    if(DRN.contains(",")){
+                        String[] drnArray = DRN.split(",");
+                        for (String drn : drnArray) {
+                            DRNList.add(drn);
+                        }
+                    } else{
+                        DRNList.add(DRN);
+                    }
+                    //binding.textDRN.setText(DRN);
                 }
                 if (responseObject.has("ProcessType")) {
                     process_type = responseObject.getString("ProcessType");
@@ -370,7 +439,7 @@ public class TruckMappingActivity extends AppCompatActivity {
                 IS_SCANNING_LOCKED = false;
                 binding.edtTruckID.setText("");
                 binding.textTruckNumber.setText("");
-                binding.textDRN.setText("");
+                binding.searchableTextView.setText(default_source_item);
                 binding.textLocationName.setText("");
                 allow_trigger_to_press = true;
                 if (tagList != null) {
@@ -401,6 +470,4 @@ public class TruckMappingActivity extends AppCompatActivity {
         super.onPause();
         rfidHandler.onPause();
     }
-
-
 }

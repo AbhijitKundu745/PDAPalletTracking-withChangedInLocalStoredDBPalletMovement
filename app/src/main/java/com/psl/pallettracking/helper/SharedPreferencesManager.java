@@ -27,6 +27,7 @@ public class SharedPreferencesManager {
     private static final String TRUCK_NUMBER = "TRUCK_NUMBER";
     private static final String LOCATION_NAME = "LOCATION_NAME";
     private static final String PROCESS_TYPE = "PROCESS_TYPE";
+    private static final String DRN = "DRN";
     private static final String POLLING_TIMER = "POLLING_TIMER";
 
     private SharedPreferencesManager() {}
@@ -184,6 +185,15 @@ public class SharedPreferencesManager {
     public static void setTruckNumber(Context context, String newValue) {
         final SharedPreferences.Editor editor = getSharedPreferences(context).edit();
         editor.putString(TRUCK_NUMBER, newValue);
+        editor.commit();
+    }
+    public static String getDRN(Context context) {
+        return getSharedPreferences(context).getString(DRN, "");
+    }
+
+    public static void setDRN(Context context, String newValue) {
+        final SharedPreferences.Editor editor = getSharedPreferences(context).edit();
+        editor.putString(DRN, newValue);
         editor.commit();
     }
     public static String getLocationName(Context context) {
