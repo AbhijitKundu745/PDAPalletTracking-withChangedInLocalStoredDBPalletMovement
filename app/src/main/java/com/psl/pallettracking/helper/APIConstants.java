@@ -17,6 +17,7 @@ public class APIConstants {
     public static final String M_UPLOAD_PARTIAL_WORK_ORDERS_DETAILS = "/PDA/InsertPartialWorkorderDetails";
     public static final String M_GET_BIN_DETAILS = "/PDA/GetBinInfo";
  public static final String M_UPLOAD_ITEM_MOVEMENT = "/PDA/ItemMovementTransaction";
+ public static final String M_GET_ALL_BARCODES = "/PDA/GetAllBarcodesForTransaction";
 
     public static final String M_GET_ASSET_MASTER = "/PDA/GetAllAssetsMobile?tenantID=";
     public static final String M_GET_ROOM_MASTER = "/PDA/GetAllRooms?tenantID=";
@@ -92,6 +93,7 @@ public class APIConstants {
     public static final String K_TAG_TID = "ATagTid";
     public static final String K_CURRENT_TAG_ID = "ATagId";
     public static final String K_PREVIOUS_TAG_ID = "OldATagId";
+
 
     public static final String K_IS_REGISTERED = "IsRegistered";
     public static final String K_INVENTORY_TYPE = "ActivityType";

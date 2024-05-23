@@ -63,7 +63,6 @@ public class TruckMappingActivity extends AppCompatActivity {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_truck_mapping);
         getSupportActionBar().hide();
         cd = new ConnectionDetector(context);
-
         binding.btnTruckRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -368,6 +367,7 @@ public class TruckMappingActivity extends AppCompatActivity {
                 TRUCK_TAG_ID = "";
                 CURRENT_EPC = "";
                 IS_SCANNING_LOCKED = false;
+                IS_TRUCK_TAG_SCANNED = false;
                 binding.edtTruckID.setText("");
                 binding.textTruckNumber.setText("");
                 binding.textDRN.setText("");
@@ -402,5 +402,9 @@ public class TruckMappingActivity extends AppCompatActivity {
         rfidHandler.onPause();
     }
 
-
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
 }

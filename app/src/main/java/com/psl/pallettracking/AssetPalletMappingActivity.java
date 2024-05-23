@@ -25,6 +25,8 @@ import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.psl.pallettracking.adapters.AssetPalletMapAdapter;
+import com.psl.pallettracking.adapters.DashboardModel;
+import com.psl.pallettracking.database.AssetMaster;
 import com.psl.pallettracking.database.DatabaseHandler;
 import com.psl.pallettracking.databinding.ActivityAssetPalletMappingBinding;
 import com.psl.pallettracking.helper.APIConstants;
@@ -80,9 +82,7 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
     String[] barcodeArray = {"B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10"};
     String menu_id = AppConstants.MENU_ID_CARTON_PALLET_MAPPING;
     String activity_type = "";
-    //String Truck_Number = "";
-    //String Location_Name = "";
-    boolean isDataUploaded = false;
+    private boolean isApiCalled = false;
 
     @Override
     public void onBackPressed() {
@@ -107,7 +107,7 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
 
 
         activity_type = db.getMenuActivityNameByMenuID(menu_id);
-        Log.e("TYPE",activity_type);
+        Log.e("TYPE", activity_type);
 
         adapter = new AssetPalletMapAdapter(context, barcodeList);
         binding.LvTags.setAdapter(adapter);
@@ -123,7 +123,7 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
 
         setDefault();
         mediaPlayer = MediaPlayer.create(context, R.raw.beep);
-        mediaPlayerErr = MediaPlayer.create(context,R.raw.error);
+        mediaPlayerErr = MediaPlayer.create(context, R.raw.error);
 
         SharedPreferencesManager.setPower(context, 10);
 
@@ -140,7 +140,9 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
             @Override
             public void onClick(View v) {
                 if (allow_trigger_to_press) {
-                    AssetUtils.openPowerSettingDialog(context, rfidHandler);
+
+                        AssetUtils.openPowerSettingDialog(context, rfidHandler);
+
                 }
             }
         });
@@ -148,7 +150,9 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
             @Override
             public void onClick(View v) {
                 if (allow_trigger_to_press) {
-                    showCustomConfirmationDialog(getResources().getString(R.string.confirm_cancel_scanning), "CANCEL");
+
+                        showCustomConfirmationDialog(getResources().getString(R.string.confirm_cancel_scanning), "CANCEL");
+
                 }
             }
         });
@@ -156,7 +160,9 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
             @Override
             public void onClick(View v) {
                 if (allow_trigger_to_press) {
-                    showCustomConfirmationDialog(getResources().getString(R.string.confirm_cancel_scanning), "BACK");
+
+                        showCustomConfirmationDialog(getResources().getString(R.string.confirm_cancel_scanning), "BACK");
+
                 }
             }
         });
@@ -171,9 +177,9 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
                             SCANNED_EPC = "";
                             if (IS_PALLET_TAG_SCANNED) {
                                 //OPEN BARCODE SCANNER
-                                if(IS_SCANNING_ALREADY_STARTED){
+                                if (IS_SCANNING_ALREADY_STARTED) {
                                     IS_SCANNING_ALREADY_STARTED = false;
-                                }else{
+                                } else {
                                     IS_SCANNING_ALREADY_STARTED = true;
                                     startScanning();
                                 }
@@ -233,12 +239,12 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
                                 }//changed
                                 try {
                                     Log.e("EPC11", epc);
-                                }catch (Exception ex){
+                                } catch (Exception ex) {
 
                                 }
                                 String assettpid = epc.substring(2, 4);
 
-                                if ( assettpid.equalsIgnoreCase("02")) {
+                                if (assettpid.equalsIgnoreCase("02")) {
                                     if (rssivalue > maxRssi) {
                                         maxRssi = rssivalue;
                                         maxRssiEpc = epc;
@@ -297,14 +303,6 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
                 scanner.setDecodeInfoCallBack(AssetPalletMappingActivity.this);
                 scanner.enable();
                 scanner.startScan();
-                //showProgress(context, "Please wait...Scanning Asset Barcode/QR");
-                //mediaPlayer.start();
-                //new Handler().postDelayed(() -> {
-                    //hideProgressDialog();
-                    //allow_trigger_to_press = true;
-                    //scanner.stopScan();
-                    //END_DATE = AssetUtils.getSystemDateTimeInFormatt();
-                //}, 2000);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -313,7 +311,6 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
 
     int CURRENT_INDEX = -1;
 
-    //HashMap<String, String> hashMap = new HashMap<>();//,tagList.get(position).get("MESSAGE")
     public void onListItemClicked(HashMap<String, String> hashmap) {
         runOnUiThread(new Runnable() {
             @Override
@@ -336,77 +333,67 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
     }
 
     private String SCANNED_EPC = "";
+
     public void stopInventoryAndDoValidations() {
         hideProgressDialog();
         adapter.notifyDataSetChanged();
         allow_trigger_to_press = true;
-       // if (tagList.size() == 1) {
-            hideProgressDialog();
-            try {
-                if (SCANNED_EPC != null) {
-                    if (!SCANNED_EPC.isEmpty()) {
-                        if (SCANNED_EPC.length() >= 24) {
-                            CURRENT_EPC = SCANNED_EPC;
-                            SCANNED_EPC = "";
-                            Log.e("EPC",CURRENT_EPC);
-                            CURRENT_EPC = CURRENT_EPC.substring(0, 24);
-                            String companycode = CURRENT_EPC.substring(0, 2);
-                            String companycode1 = AssetUtils.hexToNumber(companycode);
-                            Log.e("CompanyCode", companycode);
-                            Log.e("CompanyCodeHex", companycode1);
-                            String assettpid = CURRENT_EPC.substring(2, 4);
-                            String serialnumber = CURRENT_EPC.substring(4, 12);
-                            if (companycode.equalsIgnoreCase(SharedPreferencesManager.getCompanyCode(context))) {
-                                Log.e("SharedCompanyCode", SharedPreferencesManager.getCompanyCode(context));
-                                if (assettpid.equalsIgnoreCase("02")) {//||assettpid.equalsIgnoreCase("03")) {
-                                    PALLET_TAG_ID = CURRENT_EPC;
-                                    binding.edtRfidNumber.setText(PALLET_TAG_ID);
-                                    binding.edtRfidNumber.setText(db.getProductNameByProductTagId(PALLET_TAG_ID));
-                                    IS_PALLET_TAG_SCANNED = true;
-                                    binding.textHint.setVisibility(View.VISIBLE);
-                                    binding.textCount.setVisibility(View.VISIBLE);
-                                } else {
-                                    changeImageStatusToRfidScan();
-                                    if (assettpid.equalsIgnoreCase("03")) {
-                                        AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.scan_pallet_tag_error));
-                                    } else {
-                                        AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
-                                    }
-                                }
+        // if (tagList.size() == 1) {
+        hideProgressDialog();
+        try {
+            if (SCANNED_EPC != null) {
+                if (!SCANNED_EPC.isEmpty()) {
+                    if (SCANNED_EPC.length() >= 24) {
+                        CURRENT_EPC = SCANNED_EPC;
+                        SCANNED_EPC = "";
+                        Log.e("EPC", CURRENT_EPC);
+                        CURRENT_EPC = CURRENT_EPC.substring(0, 24);
+                        String companycode = CURRENT_EPC.substring(0, 2);
+                        String companycode1 = AssetUtils.hexToNumber(companycode);
+                        Log.e("CompanyCode", companycode);
+                        Log.e("CompanyCodeHex", companycode1);
+                        String assettpid = CURRENT_EPC.substring(2, 4);
+                        String serialnumber = CURRENT_EPC.substring(4, 12);
+                        if (companycode.equalsIgnoreCase(SharedPreferencesManager.getCompanyCode(context))) {
+                            Log.e("SharedCompanyCode", SharedPreferencesManager.getCompanyCode(context));
+                            if (assettpid.equalsIgnoreCase("02")) {//||assettpid.equalsIgnoreCase("03")) {
+                                PALLET_TAG_ID = CURRENT_EPC;
+                                binding.edtRfidNumber.setText(PALLET_TAG_ID);
+                                binding.edtRfidNumber.setText(db.getProductNameByProductTagId(PALLET_TAG_ID));
+                                IS_PALLET_TAG_SCANNED = true;
+                                binding.textHint.setVisibility(View.VISIBLE);
+                                binding.textCount.setVisibility(View.VISIBLE);
                             } else {
                                 changeImageStatusToRfidScan();
-                                AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
+                                if (assettpid.equalsIgnoreCase("03")) {
+                                    AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.scan_pallet_tag_error));
+                                } else {
+                                    AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
+                                }
                             }
                         } else {
                             changeImageStatusToRfidScan();
                             AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
                         }
-
                     } else {
                         changeImageStatusToRfidScan();
                         AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
                     }
+
                 } else {
                     changeImageStatusToRfidScan();
                     AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
-
                 }
-            } catch (Exception e) {
-                Log.e("INEXCEPTION", "" + e.getMessage());
+            } else {
                 changeImageStatusToRfidScan();
-                AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.no_rfid_error));
-            }
+                AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.invalid_rfid_error));
 
-//        } else if (tagList.size() == 0) {
-//            changeImageStatusToRfidScan();
-//            AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.no_rfid_error));
-//            //Toast.makeText(getActivity(),"Invalid RFID Tag0",Toast.LENGTH_SHORT).show();
-//        } else if (tagList.size() > 1) {
-//            changeImageStatusToRfidScan();
-//            AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.multiple_rfid_error));
-//            //Toast.makeText(getActivity(),"Invalid RFID Tag0",Toast.LENGTH_SHORT).show();
-//
-//        }
+            }
+        } catch (Exception e) {
+            Log.e("INEXCEPTION", "" + e.getMessage());
+            changeImageStatusToRfidScan();
+            AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.no_rfid_error));
+        }
     }
 
     public void setDefault() {
@@ -421,6 +408,7 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
                 binding.imgStatus.setImageDrawable(getDrawable(R.drawable.rfidscan));
                 binding.edtRfidNumber.setText("");
                 allow_trigger_to_press = true;
+                isApiCalled = false;
                 IS_PALLET_TAG_SCANNED = false;
                 binding.textHint.setVisibility(View.GONE);
                 binding.textCount.setVisibility(View.GONE);
@@ -549,10 +537,6 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
     }
 
     public int checkIsBarcodeExist(String barcode) {
-//        if (StringUtils.isEmpty(barcode)) {
-//            return -1;
-//        }
-//        return binarySearch(barcodes, barcode);
         for (int i = 0; i < barcodeList.size(); i++) {
             String existingBarcode = barcodeList.get(i).get("BARCODE");
             if (existingBarcode != null && existingBarcode.equals(barcode)) {
@@ -634,9 +618,9 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
                     setDefault();
                 } else if (action.equals("BACK")) {
                     setDefault();
-                  finishAffinity();
-                  Intent i = new Intent(AssetPalletMappingActivity.this, DashboardActivity.class);
-                  startActivity(i);
+                    finishAffinity();
+                    Intent i = new Intent(AssetPalletMappingActivity.this, DashboardActivity.class);
+                    startActivity(i);
 
                 } else if (action.equals("DELETE")) {
                     barcodeList.remove(CURRENT_INDEX);
@@ -683,7 +667,6 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
                     jsonobject.put(APIConstants.K_CUSTOMER_ID, SharedPreferencesManager.getCustomerId(context));
                     jsonobject.put(APIConstants.K_USER_ID, SharedPreferencesManager.getSavedUserId(context));
                     jsonobject.put(APIConstants.K_DEVICE_ID, SharedPreferencesManager.getDeviceId(context));
-                    //jsonobject.put(APIConstants.K_ACTIVITY_ID, "AssetPallet" + SharedPreferencesManager.getDeviceId(context) + AssetUtils.getSystemDateTimeInFormatt());
                     jsonobject.put(APIConstants.K_ACTIVITY_TYPE, activity_type);
                     jsonobject.put(APIConstants.K_INVENTORY_START_DATE_TIME, START_DATE);
                     jsonobject.put(APIConstants.K_INVENTORY_END_DATE_TIME, END_DATE);
@@ -694,15 +677,11 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
                     jsonobject.put(APIConstants.K_TRUCK_NUMBER, SharedPreferencesManager.getTruckNumber(context));
                     jsonobject.put(APIConstants.K_PROCESS_TYPE, SharedPreferencesManager.getProcessType(context));
                     jsonobject.put(APIConstants.K_DRN, SharedPreferencesManager.getDRN(context));
-                    //jsonobject.put(APIConstants.K_PALLET_ID, CURRENT_EPC);
                     JSONArray js = new JSONArray();
                     for (int i = 0; i < barcodeList.size(); i++) {
                         JSONObject barcodeObject = new JSONObject();
                         String epc = barcodeList.get(i).get("BARCODE");
-                        //barcodeObject.put(APIConstants.K_ACTIVITY_DETAILS_ID, epc + AssetUtils.getSystemDateTimeInFormatt());
                         barcodeObject.put(APIConstants.K_ITEM_DESCRIPTION, epc);
-
-                        //barcodeObject.put(APIConstants.K_ACTIVITY_ID, epc + AssetUtils.getSystemDateTimeInFormatt());
                         barcodeObject.put(APIConstants.K_TRANSACTION_DATE_TIME, AssetUtils.getSystemDateTimeInFormatt());
 
                         js.put(barcodeObject);
@@ -761,44 +740,6 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
             "GRB020PSL0823SKU0012"
     };
 
-    private void uploadDummyData() {
-        try {
-            JSONObject jsonobject = null;
-            jsonobject = new JSONObject();
-            jsonobject.put(APIConstants.K_CUSTOMER_ID, SharedPreferencesManager.getCustomerId(context));
-            jsonobject.put(APIConstants.K_USER_ID, SharedPreferencesManager.getSavedUserId(context));
-            jsonobject.put(APIConstants.K_DEVICE_ID, SharedPreferencesManager.getDeviceId(context));
-            jsonobject.put(APIConstants.K_ACTIVITY_ID, "AssetPallet" + SharedPreferencesManager.getDeviceId(context) + AssetUtils.getSystemDateTimeInFormatt());
-            jsonobject.put(APIConstants.K_ACTIVITY_TYPE, activity_type);
-            jsonobject.put(APIConstants.K_INVENTORY_START_DATE_TIME, AssetUtils.getSystemDateTimeInFormatt());
-            jsonobject.put(APIConstants.K_INVENTORY_END_DATE_TIME, AssetUtils.getSystemDateTimeInFormatt());
-            jsonobject.put(APIConstants.K_TOUCH_POINT_ID, "1");
-            jsonobject.put(APIConstants.K_INVENTORY_COUNT, 4);
-            jsonobject.put(APIConstants.K_PARENT_TAG_ID, "0F0212341234123412341234");
-            jsonobject.put(APIConstants.K_PARENT_ASSET_TYPE, "Pallet");
-            jsonobject.put(APIConstants.K_PALLET_ID, CURRENT_EPC);
-            JSONArray js = new JSONArray();
-            for (int i = 0; i < 4; i++) {
-                JSONObject barcodeObject = new JSONObject();
-                String epc = barcodesss[i];
-                barcodeObject.put(APIConstants.K_ACTIVITY_DETAILS_ID, epc + AssetUtils.getSystemDateTimeInFormatt());
-                barcodeObject.put(APIConstants.K_ASSET_TYPE_NAME, epc);
-                barcodeObject.put(APIConstants.K_ACTIVITY_ID, epc + AssetUtils.getSystemDateTimeInFormatt());
-                barcodeObject.put(APIConstants.K_TRANSACTION_DATE_TIME, AssetUtils.getSystemDateTimeInFormatt());
-
-                js.put(barcodeObject);
-            }
-            jsonobject.put(APIConstants.K_DATA, js);
-
-            uploadInventory(jsonobject, APIConstants.M_UPLOAD_INVENTORY, "Please wait...\n" + " Mapping is in progress");
-
-
-        } catch (JSONException e) {
-
-            //return null;
-        }
-    }
-
     public void uploadInventory(final JSONObject loginRequestObject, String METHOD_NAME, String progress_message) {
         showProgress(context, progress_message);
         OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
@@ -828,12 +769,12 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
                                 if (status.equalsIgnoreCase("true")) {
                                     allow_trigger_to_press = false;
                                     //TODO do validations
-                                   // JSONArray data = result.getJSONArray(APIConstants.K_DATA);
-                                  //  checkResponseAndDovalidations(data);
+                                    // JSONArray data = result.getJSONArray(APIConstants.K_DATA);
+                                    //  checkResponseAndDovalidations(data);
 
                                     //TODO
-                                        setDefault();
-                                        AssetUtils.showCommonBottomSheetSuccessDialog(context, "Mapping Done Successfully");
+                                    setDefault();
+                                    AssetUtils.showCommonBottomSheetSuccessDialog(context, "Mapping Done Successfully");
 
                                 } else {
                                     allow_trigger_to_press = true;
@@ -867,92 +808,218 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
                 });
     }
 
-    private void checkResponseAndDovalidations(JSONArray dataArray) {
-        if (dataArray.length() > 0) {
-            boolean workStatus = true;
-            for (int i = 0; i < dataArray.length(); i++) {
-                try {
-                    JSONObject dataObject = dataArray.getJSONObject(i);
 
-                    String asset_number = "";
-                    String asset_name = "";
-                    String pallet_tag_id = "";
-                    String pallet_name = "";
-                    if (dataObject.has("ParentTagID")) {
-                        pallet_tag_id = dataObject.getString("ParentTagID").trim();
-                    }
-
-                    if (dataObject.has("ParentAssetName")) {
-                        pallet_name = dataObject.getString("ParentAssetName").trim();
-                    }
-
-//                    if (dataObject.has("ChildAssetID")) {
-//                        asset_number = dataObject.getString("ChildAssetID").trim();
-//                    }
-                    if (dataObject.has("ItemName")) {
-                        asset_name = dataObject.getString("ItemName").trim();
-                    }
-
-                    String status = dataObject.getString("status").trim();
-                    String message = dataObject.getString("message").trim();
-                    if (status.equalsIgnoreCase("false")) {
-                        workStatus = false;
-                    }
-                    if (status.equalsIgnoreCase("true")) {
-                        workStatus = true;
-                    }
-                    barcodeHashMap = new HashMap<>();
-                    barcodeHashMap.put("EPC", pallet_tag_id);
-                    barcodeHashMap.put("BARCODE", asset_number);
-                    barcodeHashMap.put("ASSETNAME", asset_number);
-                    barcodeHashMap.put("COUNT", "1");
-                    barcodeHashMap.put("STATUS", status);
-                    barcodeHashMap.put("MESSAGE", message);
-                    int index = checkIsBarcodeExist(asset_name);
-                    if (index == -1) {
-                        barcodeHashMap.put("STATUS", status);
-                        barcodeList.add(barcodeHashMap);
-                        if (!barcodes.contains(asset_number)) {
-                            barcodes.add(asset_number);
-                        }
-                    } else {
-                        int tagCount = Integer.parseInt(barcodeList.get(index).get("COUNT"), 10) + 1;
-                        barcodeHashMap.put("COUNT", String.valueOf(tagCount));
-                        barcodeList.set(index, barcodeHashMap);
-                    }
-
-                    if (epcs != null) {
-                        epcs.clear();
-                    }
-                    if (tagList != null) {
-                        tagList.clear();
-                    }
-                    if (barcodeList != null) {
-                        barcodeList.clear();
-                    }
-                    if (barcodes != null) {
-                        barcodes.clear();
-                    }
-                    adapter.notifyDataSetChanged();
-                    binding.textCount.setText("Count : " + barcodeList.size());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    allow_trigger_to_press = true;
-                }
+        private void addBarcodeToList(String barcode) {
+        hideProgressDialog();
+        String[] parts = barcode.split("[,\\s]+");
+        if (parts.length >3 && parts.length<6) {
+            if (!isApiCalled) {
+                isApiCalled = true;
+                mediaPlayer.start();
+                getBarcodeList(barcode);
             }
-            if (workStatus) {
-                setDefault();
-                AssetUtils.showCommonBottomSheetSuccessDialog(context, "Mapping Done Successfully");
+            else{
+                barcodeHashMap = new HashMap<>();
+                barcodeHashMap.put("EPC", CURRENT_EPC);
+                barcodeHashMap.put("BARCODE", barcode);
+                barcodeHashMap.put("ASSETNAME", barcode);
+                barcodeHashMap.put("COUNT", "1");
+                barcodeHashMap.put("STATUS", "true");
+                barcodeHashMap.put("MESSAGE", "");
+                int index = checkIsBarcodeExist(barcode);
+                if (index == -1) {
+
+                    barcodeList.add(barcodeHashMap);
+
+                    if (!barcodes.contains(barcode)) {
+                        barcodes.add(barcode);
+                        mediaPlayer.start();
+                    }
+                } else {
+                    int tagCount = Integer.parseInt(barcodeList.get(index).get("COUNT"), 10) + 1;
+                    barcodeHashMap.put("COUNT", String.valueOf(tagCount));
+                    barcodeList.set(index, barcodeHashMap);
+                    AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.barcode_already_scanned));
+                    mediaPlayerErr.start();
+
+                }
+                binding.textCount.setText("Count : " + barcodeList.size());
+                adapter.notifyDataSetChanged();
+                END_DATE = AssetUtils.getSystemDateTimeInFormatt();
+
+                try {
+                    if (scanner != null) {
+                        scanner.stopScan();
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                new Handler().postDelayed(() -> {
+                    hideProgressDialog();
+                    if(IS_SCANNING_ALREADY_STARTED){
+                        IS_SCANNING_ALREADY_STARTED = false;
+                        // startScanning();
+                    }
+                }, 500);
+            }
+
+        } else {
+            // Barcode format does not match, handle accordingly
+            // For example, show an error message
+            AssetUtils.showCommonBottomSheetErrorDialog(context, "Barcode format does not match the expected format");
+        }
+    }
+
+
+    // Your existing method to be called by AsyncTask
+    private void getBarcodeList(final String barcode) {
+        new GetBarcodeListTask().execute(barcode);
+    }
+
+    // AsyncTask to handle the background network operation
+    private class GetBarcodeListTask extends AsyncTask<String, Void, JSONObject> {
+        private String errorMessage = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // Show progress dialog if needed
+        }
+
+        @Override
+        protected JSONObject doInBackground(String... params) {
+            String barcode = params[0];
+            if (!barcode.equalsIgnoreCase("")) {
+                try {
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put(APIConstants.K_ITEM_DESCRIPTION, barcode);
+                            jsonObject.put(APIConstants.K_DEVICE_ID, SharedPreferencesManager.getDeviceId(context));
+                            return jsonObject;
+                } catch (JSONException e) {
+
+                    return null;
+                }
+            } else {
+                return null;
             }
         }
 
+        @Override
+        protected void onPostExecute(JSONObject result) {
+            super.onPostExecute(result);
+            // Hide progress dialog
+            isApiCalled = false;
+            allow_trigger_to_press = true;
+            if (result != null) {
+                try {
+                    allow_trigger_to_press = true;
+                    getBarcodes(result, APIConstants.M_GET_ALL_BARCODES);
+
+                } catch (OutOfMemoryError e) {
+                    hideProgressDialog();
+                    allow_trigger_to_press = false;
+                }
+            } else {
+                if (errorMessage != null) {
+                    AssetUtils.showCommonBottomSheetErrorDialog(context, errorMessage);
+                } else {
+                    AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.communication_error));
+                }
+            }
+        }
+    }
+    private void getBarcodes(JSONObject jsonData, String MethodName) {
+        OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
+                .connectTimeout(APIConstants.API_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(APIConstants.API_TIMEOUT, TimeUnit.SECONDS)
+                .writeTimeout(APIConstants.API_TIMEOUT, TimeUnit.SECONDS)
+                .build();
+
+        Log.e("URL", SharedPreferencesManager.getHostUrl(context) + MethodName);
+        Log.e("LOGINREQUEST", jsonData.toString());
+        AndroidNetworking.post(SharedPreferencesManager.getHostUrl(context) + MethodName).addJSONObjectBody(jsonData)
+                .setTag("test")
+                .setPriority(Priority.LOW)
+                .setOkHttpClient(okHttpClient) // passing a custom okHttpClient
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject result) {
+                        hideProgressDialog();
+                        if (result != null) {
+                            Log.e("result", result.toString());
+
+                            try {
+                                Log.e("GETTINGRESULT", result.toString());
+                                String status = result.getString(APIConstants.K_STATUS).trim();
+                                String message = result.getString(APIConstants.K_MESSAGE).trim();
+
+                                if (status.equalsIgnoreCase("true")) {
+                                    if (result.has(APIConstants.K_DATA)) {
+                                        allow_trigger_to_press = true;
+                                        JSONArray dataArray = result.getJSONArray(APIConstants.K_DATA);
+                                        if (dataArray != null && dataArray.length() > 0) {
+                                            List<String> barcodeFromApi = new ArrayList<>();
+                                            for (int i = 0; i < dataArray.length(); i++) {
+                                                JSONObject item = dataArray.getJSONObject(i);
+                                                String itemDescription = item.getString(APIConstants.K_ITEM_DESCRIPTION);
+                                                barcodeFromApi.add(itemDescription);
+                                            }
+                                            setBarcodesToUI(barcodeFromApi);
+                                        } else{
+                                            setBarcodeToUIForNoResponse(jsonData.getString(APIConstants.K_ITEM_DESCRIPTION));
+                                        }
+                                    }
+                                } else {
+                                    AssetUtils.showCommonBottomSheetErrorDialog(context, message);
+                                }
+                            } catch (JSONException e) {
+                                hideProgressDialog();
+                                AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.something_went_wrong_error));
+                            }
+                        } else {
+                            hideProgressDialog();
+                            allow_trigger_to_press = true;
+                            AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.communication_error));
+                        }
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        hideProgressDialog();
+                        allow_trigger_to_press = true;
+                        Log.e("ERROR", anError.getErrorDetail());
+                        if (anError.getErrorDetail().equalsIgnoreCase("responseFromServerError")) {
+                            AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.communication_error));
+                        } else if (anError.getErrorDetail().equalsIgnoreCase("connectionError")) {
+                            AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.internet_error));
+                        } else {
+                            AssetUtils.showCommonBottomSheetErrorDialog(context, getResources().getString(R.string.internet_error));
+                        }
+                    }
+                });
     }
 
-    private void addBarcodeToList(String barcode) {
-        hideProgressDialog();
-        allow_trigger_to_press = true;
-        String[] parts = barcode.split("[,\\s]+");
-        if (parts.length >3 && parts.length<6) {
+    private void setBarcodesToUI(List<String> barcodeFromAPI){
+        isApiCalled = false;
+        for(String serverBarCode : barcodeFromAPI){
+            barcodeHashMap = new HashMap<>();
+            barcodeHashMap.put("EPC", CURRENT_EPC);
+            barcodeHashMap.put("BARCODE", serverBarCode);
+            barcodeHashMap.put("ASSETNAME", serverBarCode);
+            barcodeHashMap.put("COUNT", "1");
+            barcodeHashMap.put("STATUS", "true");
+            barcodeHashMap.put("MESSAGE", "");
+            barcodeList.add(barcodeHashMap);
+            barcodes.add(serverBarCode);
+        }
+        binding.textCount.setText("Count : " + barcodeList.size());
+        adapter.notifyDataSetChanged();
+        END_DATE = AssetUtils.getSystemDateTimeInFormatt();
+        Log.e("Barcodes0", barcodes.toString());
+    }
+    private void setBarcodeToUIForNoResponse(String barcode){
+        isApiCalled = true;
         barcodeHashMap = new HashMap<>();
         barcodeHashMap.put("EPC", CURRENT_EPC);
         barcodeHashMap.put("BARCODE", barcode);
@@ -963,7 +1030,7 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
         int index = checkIsBarcodeExist(barcode);
         if (index == -1) {
 
-                barcodeList.add(barcodeHashMap);
+            barcodeList.add(barcodeHashMap);
 
             if (!barcodes.contains(barcode)) {
                 barcodes.add(barcode);
@@ -992,13 +1059,8 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
             hideProgressDialog();
             if(IS_SCANNING_ALREADY_STARTED){
                 IS_SCANNING_ALREADY_STARTED = false;
-               // startScanning();
+                // startScanning();
             }
         }, 500);
-        } else {
-            // Barcode format does not match, handle accordingly
-            // For example, show an error message
-            AssetUtils.showCommonBottomSheetErrorDialog(context, "Barcode format does not match the expected format");
-        }
     }
 }

@@ -483,9 +483,11 @@ private void setListData(TagBean bean1) {
                             break;
 
                         case "I0":
-                            if(getTagType(epcId).equalsIgnoreCase(typeBean)){
-                                DestinationTag = epcId;
-                                showCustomConfirmationDialog("Do you want to move the pallet in "+ db.getProductNameByProductTagId(epcId)+"?","SAVE");
+                            String i0BinTagId = LoadingUnloadingActivityHelpers.getI0BinTagIdForPallet(PalletTag, orderDetailsList);
+                            Log.e("destid-I0",i0BinTagId);
+                            if(epcId.equalsIgnoreCase(i0BinTagId)){
+                                DestinationTag = i0BinTagId;
+                                showCustomConfirmationDialog("Do you want to move the pallet in "+ db.getProductNameByProductTagId(i0BinTagId)+"?","SAVE");
 
                             } else{
                                 isRfidReadingIsInProgress = false;
@@ -946,7 +948,7 @@ Log.e("DBTAG", tagWithDestination.getDestinationTag());
                                     workOrderDetailsDisAdapter.notifyDataSetChanged();
                                 }
 
-                                if(workOrderType.equalsIgnoreCase("U0") || workOrderType.equalsIgnoreCase("U1")){
+                                if(workOrderType.equalsIgnoreCase("U0") || workOrderType.equalsIgnoreCase("U1")||workOrderType.equalsIgnoreCase("I0")){
                                     if(recOrderDetailsList!=null){
                                         recOrderDetailsList.clear();
                                         binding.recCount.setText(""+recOrderDetailsList.size());
