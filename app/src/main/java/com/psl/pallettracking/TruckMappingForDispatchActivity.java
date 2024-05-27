@@ -17,9 +17,12 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.androidnetworking.AndroidNetworking;
 import com.androidnetworking.common.Priority;
@@ -58,6 +61,7 @@ public class TruckMappingForDispatchActivity extends AppCompatActivity {
     private String default_source_item = "Select DC No";
     String CURRENT_EPC = "";
     String TRUCK_TAG_ID = "";
+    String DCNO = "";
     HashMap<String, String> hashMap = new HashMap<>();
     public ArrayList<HashMap<String, String>> tagList = new ArrayList<HashMap<String, String>>();
     Dialog dialog;
@@ -81,6 +85,7 @@ public class TruckMappingForDispatchActivity extends AppCompatActivity {
                         public void run() {
 
                             Intent AssetPalletMappingIntent = new Intent(TruckMappingForDispatchActivity.this, AssetPalletMappingActivity.class);
+                            AssetPalletMappingIntent.putExtra("DRN", DCNO);
                             //AssetPalletMappingIntent.putExtra("TruckNumber", SharedPreferencesManager.getTruckNumber(context));
                             //AssetPalletMappingIntent.putExtra("LocationName", SharedPreferencesManager.getLocationName(context));
 
@@ -103,7 +108,7 @@ public class TruckMappingForDispatchActivity extends AppCompatActivity {
                         public void run() {
 
                             Intent AssetPalletMappingIntent = new Intent(TruckMappingForDispatchActivity.this, AssetPalletWithItemActivity.class);
-                            //AssetPalletMappingIntent.putExtra("TruckNumber", SharedPreferencesManager.getTruckNumber(context));
+                            AssetPalletMappingIntent.putExtra("DRN", DCNO);
                             //AssetPalletMappingIntent.putExtra("LocationName", SharedPreferencesManager.getLocationName(context));
 
                             startActivity(AssetPalletMappingIntent);
@@ -120,6 +125,14 @@ public class TruckMappingForDispatchActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (allow_trigger_to_press) {
                     setDefault();
+                }
+            }
+        });
+        binding.btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (allow_trigger_to_press) {
+                    showCustomConfirmationDialog(getResources().getString(R.string.confirm_back), "BACK");
                 }
             }
         });
@@ -258,6 +271,7 @@ public class TruckMappingForDispatchActivity extends AppCompatActivity {
 
                             } else {
                                 SharedPreferencesManager.setDRN(context, SELECTED_ITEM);
+                                DCNO = SELECTED_ITEM;
                             }
                         } else{
                             AssetUtils.showCommonBottomSheetErrorDialog(context, "Please scan truck tag");
@@ -464,10 +478,57 @@ public class TruckMappingForDispatchActivity extends AppCompatActivity {
     public void onDestroy() {
         rfidHandler.onDestroy();
         super.onDestroy();
+        finish();
     }
     @Override
     public void onPause() {
         super.onPause();
+        binding.btnClear.setVisibility(View.GONE);
+        binding.btnPower.setVisibility(View.GONE);
+        binding.btnBack.setVisibility(View.VISIBLE);
         rfidHandler.onPause();
+    }
+    @Override
+    public void onBackPressed() {
+        showCustomConfirmationDialog(getResources().getString(R.string.confirm_back), "BACK");
+    }
+    Dialog customConfirmationDialog;
+
+    public void showCustomConfirmationDialog(String msg, final String action) {
+        if (customConfirmationDialog != null) {
+            customConfirmationDialog.dismiss();
+        }
+        customConfirmationDialog = new Dialog(context);
+        if (customConfirmationDialog != null) {
+            customConfirmationDialog.dismiss();
+        }
+        customConfirmationDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        customConfirmationDialog.setCancelable(false);
+        customConfirmationDialog.setContentView(R.layout.custom_alert_dialog_layout2);
+        TextView text = (TextView) customConfirmationDialog.findViewById(R.id.text_dialog);
+        text.setText(msg);
+        Button dialogButton = (Button) customConfirmationDialog.findViewById(R.id.btn_dialog);
+        Button dialogButtonCancel = (Button) customConfirmationDialog.findViewById(R.id.btn_dialog_cancel);
+        dialogButton.setText("YES");
+        dialogButtonCancel.setText("NO");
+        dialogButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                customConfirmationDialog.dismiss();
+                if (action.equals("BACK")) {
+                    setDefault();
+                    finish();
+                }
+
+            }
+        });
+        dialogButtonCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                customConfirmationDialog.dismiss();
+            }
+        });
+        // customConfirmationDialog.getWindow().getAttributes().windowAnimations = R.style.SlideBottomUpAnimation;
+        customConfirmationDialog.show();
     }
 }

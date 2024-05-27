@@ -82,6 +82,7 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
     String[] barcodeArray = {"B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10"};
     String menu_id = AppConstants.MENU_ID_CARTON_PALLET_MAPPING;
     String activity_type = "";
+    String DC_NO = "";
     private boolean isApiCalled = false;
 
     @Override
@@ -114,11 +115,13 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
 
         //Truck_Number = getIntent().getStringExtra("TruckNumber");
         //Location_Name = getIntent().getStringExtra("LocationName");
+        Intent intent = getIntent();
+        DC_NO = intent.getStringExtra("DRN");
         binding.TruckNumber.setText(SharedPreferencesManager.getTruckNumber(context));
         binding.TruckNumber.setSelected(true);
         binding.LocationName.setText(SharedPreferencesManager.getLocationName(context));
         binding.LocationName.setSelected(true);
-        binding.DRN.setText(SharedPreferencesManager.getDRN(context));
+        binding.DRN.setText(DC_NO);
         binding.DRN.setSelected(true);
 
         setDefault();
@@ -618,9 +621,11 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
                     setDefault();
                 } else if (action.equals("BACK")) {
                     setDefault();
-                    finishAffinity();
-                    Intent i = new Intent(AssetPalletMappingActivity.this, DashboardActivity.class);
-                    startActivity(i);
+                    finish();
+//                    setDefault();
+//                    finishAffinity();
+//                    Intent i = new Intent(AssetPalletMappingActivity.this, DashboardActivity.class);
+//                    startActivity(i);
 
                 } else if (action.equals("DELETE")) {
                     barcodeList.remove(CURRENT_INDEX);
@@ -676,7 +681,7 @@ public class AssetPalletMappingActivity extends AppCompatActivity implements Dec
                     jsonobject.put(APIConstants.K_PARENT_ASSET_TYPE, "Pallet");
                     jsonobject.put(APIConstants.K_TRUCK_NUMBER, SharedPreferencesManager.getTruckNumber(context));
                     jsonobject.put(APIConstants.K_PROCESS_TYPE, SharedPreferencesManager.getProcessType(context));
-                    jsonobject.put(APIConstants.K_DRN, SharedPreferencesManager.getDRN(context));
+                    jsonobject.put(APIConstants.K_DRN, DC_NO);
                     JSONArray js = new JSONArray();
                     for (int i = 0; i < barcodeList.size(); i++) {
                         JSONObject barcodeObject = new JSONObject();
